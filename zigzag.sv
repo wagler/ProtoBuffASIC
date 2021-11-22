@@ -11,11 +11,11 @@ module zigzag(en, in_val, is_32, out_val);
             if (is_32)
             begin
 		out_val[63:32] = 32'b0;
-                out_val[31:0] = (in_val << 1) ^ (in_val >>> 31);
+                out_val[31:0] = (in_val << 1) ^ {32{in_val[32]}};
             end
             else
             begin
-                out_val = (in_val << 1) ^ (in_val >>> 63);
+               	out_val = (in_val << 1) ^ {64{in_val[63]}};
             end
         end
         else 

@@ -29,6 +29,18 @@ module top_varint_tb;
 
 		#20
 
+		value = -2;
+		field_id = 29'd2;
+		field_type = 5'd5;
+
+		#20
+
+		value = 2;
+		field_id = 29'd2;
+		field_type = 5'd18;
+
+		#20
+
 		$finish;
 
 	end
