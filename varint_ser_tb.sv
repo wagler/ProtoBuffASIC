@@ -10,6 +10,16 @@ module varint_ser_tb;
         .out_port(out_port)
     );
 
+    logic [28:0] field_id_in;
+    logic [4:0] field_type_in;
+    logic [39:0] fh_out_port;
+
+    field_header fh (
+        .field_id(field_id_in),
+        .field_type(field_type_in),
+        .out_port(fh_out_port)
+    );
+
     initial
     begin
         clk = 0;
@@ -28,6 +38,23 @@ module varint_ser_tb;
         $monitor("@%g input = %d output = %b",$time, in_port, out_port);
         in_port = 64'd150;
         #20;
+
+        $monitor("@%g field id=%d \t field type=%d, output=%b",$time, field_id_in, field_type_in, fh_out_port);
+
+        field_id_in = 0;
+        field_type_in = 0;
+
+        #1 
+
+        field_id_in = 29'd150;
+        field_type_in = 5'd3;
+
+        #20
+
+        field_id_in = 29'd150;
+        field_type_in = 5'd1;
+
+        #20
         $finish;
     end
 endmodule
