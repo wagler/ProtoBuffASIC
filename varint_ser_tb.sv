@@ -33,7 +33,7 @@ module varint_ser_tb;
     initial
     begin
         $display("Loading file into ram");
-        $readmemh("raw_obj.bin", array1);
+        $readmemh("simple_obj.mem", array1);
         $display("array1 = %p", array1);
         $monitor("@%g input = %d output = %b",$time, in_port, out_port);
         in_port = 64'd150;
