@@ -25,8 +25,8 @@ LIB = /afs/umich.edu/class/eecs470/lib/verilog/lec25dscc25.v
 
 # SIMULATION CONFIG
 
-SIMFILES	= top_varint.sv varint_ser.sv field_header.sv zigzag.sv
-TESTBENCH	= top_varint_tb.sv
+SIMFILES	= top_level.sv top_varint.sv varint_ser.sv field_header.sv zigzag.sv
+TESTBENCH	= top_level_tb.sv
 
 # SYNTHESIS CONFIG
 

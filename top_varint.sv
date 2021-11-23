@@ -1,9 +1,8 @@
-module top_varint(value, field_id, field_type, out_port);
+module top_varint(value, field_type, out_port);
 
 	input logic [63:0] value;
-	input logic [28:0] field_id;
 	input logic [4:0] field_type;
-	output logic [119:0] out_port;
+	output logic [79:0] out_port;
 
 	wire zz_en;
 	wire [63:0] varint_ser_input;
@@ -24,13 +23,15 @@ module top_varint(value, field_id, field_type, out_port);
 
 	varint_ser vs1(
 			.in_port(varint_ser_input),
-			.out_port(out_port[119:40])
+			.out_port(out_port[79:0])
 	);
 
+	/*
 	field_header fh1(
 			.field_id(field_id),
 			.field_type(field_type),
 			.out_port(out_port[39:0])
 	);
+	*/
 
 endmodule
