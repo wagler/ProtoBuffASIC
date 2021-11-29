@@ -32,8 +32,9 @@ module dram_tb;
     integer i;
     initial
     begin
-        $monitor("@%g reset=%b, en=%b, data_in=%h, addr=%h, data_out=%h, valid=%b, state=%d, cnt=%d, rdwr=%b",$time, reset, en, data_in, addr, data_out, valid, dram.state, dram.cnt, dram.rdwr);
+        $monitor("@%g reset=%b, en=%b, data_in=%h, addr=%h, data_out=%h, valid=%b, state=%d, cnt=%d, rdwr=%b",$time, reset, dram.en_int, dram.data_in_int, dram.addr_int, data_out, valid, dram.state, dram.cnt, dram.rdwr);
 
+        // Reset
         reset = 1'b1;
         @(negedge clk);
         @(negedge clk);
@@ -42,18 +43,28 @@ module dram_tb;
         en    = 8'b0;
         @(negedge clk);
         @(negedge clk);
+
+        // Simple write test
         data_in[0] = 64'd1;
         addr[0] = 64'd0;
         en[0] = 1'b1;
         rdwr = 1'd0;
-        for(i = 0; i < 25; i=i+1)
+        @(negedge clk);
+        @(negedge clk);
+        en[0] = 1'b0;
+        for(i = 0; i <= 21; i=i+1)
         begin
             @(negedge clk);
         end
+
+        // Simple read test
         addr[0] = 64'd0;
         en[0] = 1'b1;
         rdwr = 1'd1;
-        for(i = 0; i < 25; i=i+1)
+        @(negedge clk);
+        @(negedge clk);
+        en[0] = 1'b0;
+        for(i = 0; i <= 21; i=i+1)
         begin
             @(negedge clk);
         end
