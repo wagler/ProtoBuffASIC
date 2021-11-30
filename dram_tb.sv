@@ -17,6 +17,11 @@ module dram_tb;
     always
         #1 clk = !clk;
 
+    initial
+    begin
+        $dumpfile("dram.vcd");
+        $dumpvars;
+    end
 
     DRAM dram(
         .clk(clk),
@@ -65,6 +70,36 @@ module dram_tb;
         @(negedge clk);
         en[0] = 1'b0;
         for(i = 0; i <= 21; i=i+1)
+        begin
+            @(negedge clk);
+        end
+
+        // Write to two addresses, simultaneously
+        addr[0] = 64'd1;
+        addr[1] = 64'd2;
+        rdwr = 1'b0;
+        en[0] = 1'b1;
+        en[1] = 1'b1;
+        @(negedge clk);
+        @(negedge clk);
+        en[0] = 1'b0;
+        en[1] = 1'b0;
+        for(i = 0; i <= 21; i=i+1)
+        begin
+            @(negedge clk);
+        end
+
+        // Read from two addresses, simultaneously
+        addr[0] = 64'd1;
+        addr[1] = 64'd2;
+        rdwr = 1'b1;
+        en[0] = 1'b1;
+        en[1] = 1'b1;
+        @(negedge clk);
+        @(negedge clk);
+        en[0] = 1'b0;
+        en[1] = 1'b0;
+        for(i = 0; i <= 22; i=i+1)
         begin
             @(negedge clk);
         end
