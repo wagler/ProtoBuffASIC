@@ -25,8 +25,8 @@ LIB = /afs/umich.edu/class/eecs470/lib/verilog/lec25dscc25.v
 
 # SIMULATION CONFIG
 
-SIMFILES	= varint_ser.sv field_header.sv zigzag.sv dram.sv object_buffer.sv
-TESTBENCH	= dram_tb.sv 
+SIMFILES	= sys_defs.vh varint_ser.sv field_header.sv zigzag.sv dram.sv object_buffer.sv 
+TESTBENCH	= object_buffer_tb.sv 
 
 # SYNTHESIS CONFIG
 
