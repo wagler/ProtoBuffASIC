@@ -1,8 +1,8 @@
 `define WAIT_CYCLES 20
 
-
 // Put rdwr, data_in, and addr values on input lines
 // Set en to high for at least one cycle
+// rdwr is 1 when we want to read from dram and 0 when we want to write to dram
 module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
 
     input wire clk;
@@ -39,34 +39,52 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
         next_state = IDLE;
         next_valid = 0;
         case(state)
-            IDLE: if (en_int) begin
-                next_state = WAIT; 
-            end else begin
-                next_state = IDLE;
-            end
+            IDLE: 
+                begin
+                    if (en_int) begin
+                        next_state = WAIT; 
+                    end else begin
+                        next_state = IDLE;
+                    end
+                end
 
             WAIT:
-                if ((cnt == `WAIT_CYCLES) & rdwr_int) begin
-                    next_state = REPLY_RD; 
-                end else if ((cnt == `WAIT_CYCLES) & ~rdwr_int) begin
-                    next_state = REPLY_WR; 
-                end else begin
-                    next_state = WAIT;
+                begin
+                    if ((cnt == `WAIT_CYCLES-1) & rdwr_int) begin
+                        next_state = REPLY_RD; 
+                        for (i = 0; i < 8; i=i+1) begin
+                            if (en_int[i])
+                                next_valid[i] = 1'b1;
+                        end
+                    end else if ((cnt == `WAIT_CYCLES-1) & ~rdwr_int) begin
+                        next_state = REPLY_WR; 
+
+                        for (i = 0; i < 8; i=i+1) begin
+                            if (en_int[i]) begin
+                                next_mem[addr_int[i]] = data_in_int[i];
+                            end
+                        end
+                    end else begin
+                        next_state = WAIT;
+                    end
                 end
 
             REPLY_RD:
-                for (i = 0; i < 8; i=i+1) begin
-                    if (en_int[i]) begin
-                        data_out[i] = mem[addr_int[i]];
-                        next_valid[i] = 1'b1;
+                begin
+                    for (i = 0; i < 8; i=i+1) begin
+                        if (en_int[i]) begin
+                            data_out[i] = mem[addr_int[i]];
+                        end
                     end
+                    
+                    next_state = IDLE;
+                    next_valid = 0;
                 end
 
             REPLY_WR:
-                for (i = 0; i < 8; i=i+1) begin
-                    if (en_int[i]) begin
-                        next_mem[addr_int[i]] = data_in_int[i];
-                    end
+                begin
+                    next_state = IDLE;
+                    next_valid = 0;
                 end
 
             default: next_state = IDLE;
