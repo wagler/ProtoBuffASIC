@@ -14,13 +14,3 @@ typedef struct packed {
     TABLE_ENTRY     entry;
 } BUFFER_ENTRY;
 
-interface DRAM_PORT();
-    logic [7:0] en;
-    logic rdwr;
-    logic [7:0][63:0] addr;
-    logic [7:0][7:0] data;
-    logic [7:0] valid;
-    
-    modport dram(input en, input rdwr, inout data, input addr, output valid);
-    modport user(output en, output rdwr, inout data, output addr, input valid);
-endinterface
