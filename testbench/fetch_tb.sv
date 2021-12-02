@@ -52,12 +52,6 @@ module fetch_tb;
 
     initial
     begin
-        $dumpfile("fetch.vcd");
-        $dumpvars;
-    end
-
-    initial
-    begin
         $monitor("@%g state=%d, reset=%b, en=%b, dram_en=%b, dram_addr=%h, dram_valid=%b, dram_data=%h, ob_valid=%b, entry=%h, ras_ptr=%h, ras_val=%h", $time, f.state, reset, en, dram_en, dram_addr, dram_valid, dram_data, ob_valid, entry, f.ret_addr_stack_ptr, f.ret_addr_stack[f.ret_addr_stack_ptr]);
         reset = 1;
         en = 0;
@@ -65,7 +59,9 @@ module fetch_tb;
         reset = 0;
         en = 0;
         new_addr_valid = 0;
+        ob_full = 0;
 
+        /*
         // Realistically, we could do this before the dram gets reset, because dram doesn't actually
         // clear its values when it gets reset, but we'll just do it after reset.
         $readmemh("testbench/demo16.mem", dram.mem);
@@ -83,7 +79,6 @@ module fetch_tb;
         en = 0;
         while(~ob_valid) @(negedge clk);
         @(negedge clk);
-
 
 
         // Load a 64 byte program into memory filled with random data.
@@ -122,7 +117,7 @@ module fetch_tb;
         @(negedge clk)
         en = 0;
         while(~ob_valid) @(negedge clk);
-
+*/
         // Tests 2 tables in memory
         reset = 1;
         en = 0;
@@ -141,7 +136,6 @@ module fetch_tb;
         begin
             $write("@0x%h : %h\n", i, dram.mem[i]);
         end
-        $write("\n");
 
         en = 0;
         @(negedge clk);
@@ -161,8 +155,37 @@ module fetch_tb;
 
         for (int i = 0; i < 3; i=i+1)
         begin
+            if (i == f.ret_addr_stack_ptr)
+            begin
+                $write("->");
+            end
+            $write("%d : %h\n", i, f.ret_addr_stack[i]);
+        end
+
+   /*
+        $readmemh("simple_proto/sim.table", dram.mem);
+        $display("Loaded the following data into memory at address 0x0");
+        for (int i = 0; i < 16; i=i+1)
+        begin
+            $write("@0x%h : %h\n", i, dram.mem[i]);
+        end
+
+        en = 0;
+        @(negedge clk);
+        en = 1;
+        
+        while(~ob_valid) @(negedge clk);
+        @(negedge clk);
+        while(~ob_valid) @(negedge clk);
+        @(negedge clk);
+        en = 0;
+
+        for (int i = 0; i < 3; i=i+1)
+        begin
             $display("%d : %h", i, f.ret_addr_stack[i]);
         end
+*/    
+
         $finish;
     end
 endmodule
