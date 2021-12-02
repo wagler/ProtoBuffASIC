@@ -22,8 +22,8 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
     logic [1:0] state, next_state;
     logic [7:0] cnt;
     wire [7:0] next_cnt;
-    logic [7:0] mem [0:63]; // actual array representing memory
-    logic [7:0] next_mem [0:63];
+    logic [7:0] mem [0:1023]; // actual array representing memory
+    logic [7:0] next_mem [0:1023];
     logic [7:0] next_valid;
     logic [7:0] en_int;
     logic rdwr_int;

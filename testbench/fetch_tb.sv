@@ -58,7 +58,7 @@ module fetch_tb;
 
     initial
     begin
-        $monitor("@%g state=%d, reset=%b, en=%b, dram_en=%b, dram_addr=%h, dram_valid=%b, dram_data=%h, ob_valid=%b, entry=%h", $time, f.state, reset, en, dram_en, dram_addr, dram_valid, dram_data, ob_valid, entry);
+        $monitor("@%g state=%d, reset=%b, en=%b, dram_en=%b, dram_addr=%h, dram_valid=%b, dram_data=%h, ob_valid=%b, entry=%h, ras_ptr=%h, ras_val=%h", $time, f.state, reset, en, dram_en, dram_addr, dram_valid, dram_data, ob_valid, entry, f.ret_addr_stack_ptr, f.ret_addr_stack[f.ret_addr_stack_ptr]);
         reset = 1;
         en = 0;
         @(negedge clk);
@@ -123,6 +123,46 @@ module fetch_tb;
         en = 0;
         while(~ob_valid) @(negedge clk);
 
+        // Tests 2 tables in memory
+        reset = 1;
+        en = 0;
+        @(negedge clk);
+        @(negedge clk);
+        reset = 0;
+
+        $readmemh("testbench/table1.mem", dram.mem);
+        $readmemh("testbench/table2.mem", dram.mem, 64'h100);
+        $display("Loaded the following data into memory at address 0x0");
+        for (int i = 0; i < 32; i=i+1)
+        begin
+            $write("@0x%h : %h\n", i, dram.mem[i]);
+        end
+        for (int i = 64'h100; i < 64'h110; i=i+1)
+        begin
+            $write("@0x%h : %h\n", i, dram.mem[i]);
+        end
+        $write("\n");
+
+        en = 0;
+        @(negedge clk);
+        en = 1;
+        
+        while(~ob_valid) @(negedge clk);
+        @(negedge clk);
+        while(~ob_valid) @(negedge clk);
+        @(negedge clk);
+        while(~ob_valid) @(negedge clk);
+        @(negedge clk);
+        while(~ob_valid) @(negedge clk);
+        @(negedge clk);
+        while(~ob_valid) @(negedge clk);
+        @(negedge clk);
+        en = 0;
+
+        for (int i = 0; i < 3; i=i+1)
+        begin
+            $display("%d : %h", i, f.ret_addr_stack[i]);
+        end
         $finish;
     end
 endmodule
