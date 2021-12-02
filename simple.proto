@@ -1,7 +1,0 @@
-syntax = "proto2";
-
-package tutorial;
-
-message Simple {
-  required int32 gpa = 1; 
-}
