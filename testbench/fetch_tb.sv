@@ -81,10 +81,48 @@ module fetch_tb;
         en = 1;
         @(negedge clk)
         en = 0;
-        for (int i = 0; i < 100; i=i+1)
+        while(~ob_valid) @(negedge clk);
+        @(negedge clk);
+
+
+
+        // Load a 64 byte program into memory filled with random data.
+        // This should start at addresss 0, so it will overwrite the original file data
+        $readmemh("testbench/demo64.mem", dram.mem);
+        $display("Loaded the following data into memory at address 0x0");
+        for (int i = 0; i < 64; i=i+1)
         begin
-            @(negedge clk);
+            $write("%h ",dram.mem[i]);
         end
+        $write("\n");
+
+        // Start the fetch state machine again, but the address it fetches from should still be 0x10
+        @(negedge clk);
+        ob_full = 0;
+        en = 1;
+        @(negedge clk)
+        en = 0;
+        while(~ob_valid) @(negedge clk); 
+        @(negedge clk); 
+
+        $display("Running again, but with address set to 0x8");
+        $display("memory:");
+        for (int i = 0; i < 64; i=i+1)
+        begin
+            $write("%h ",dram.mem[i]);
+        end
+        $write("\n");
+        new_addr = 64'h8;
+        new_addr_valid = 1'b1;
+        @(negedge clk);
+        new_addr_valid = 1'b0;
+        @(negedge clk);
+        ob_full = 0;
+        en = 1;
+        @(negedge clk)
+        en = 0;
+        while(~ob_valid) @(negedge clk);
+
         $finish;
     end
 endmodule
