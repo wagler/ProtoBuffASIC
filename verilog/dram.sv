@@ -38,10 +38,11 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
     begin
         next_state = IDLE;
         next_valid = 0;
+        next_mem = mem;
         case(state)
             IDLE: 
                 begin
-                    if (en_int) begin
+                    if (en) begin
                         next_state = WAIT; 
                     end else begin
                         next_state = IDLE;
@@ -54,7 +55,10 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
                         next_state = REPLY_RD; 
                         for (i = 0; i < 8; i=i+1) begin
                             if (en_int[i])
+                            begin
                                 next_valid[i] = 1'b1;
+                                data_out[i] = mem[addr_int[i]];
+                            end
                         end
                     end else if ((cnt == `WAIT_CYCLES-1) & ~rdwr_int) begin
                         next_state = REPLY_WR; 
@@ -71,11 +75,11 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
 
             REPLY_RD:
                 begin
-                    for (i = 0; i < 8; i=i+1) begin
+                    /*for (i = 0; i < 8; i=i+1) begin
                         if (en_int[i]) begin
                             data_out[i] = mem[addr_int[i]];
                         end
-                    end
+                    end*/
                     
                     next_state = IDLE;
                     next_valid = 0;

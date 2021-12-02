@@ -76,7 +76,7 @@ module fetch(clk, reset, en, new_addr, new_addr_valid, dram_en, dram_rdwr, dram_
             DRAM1_START:
                 begin
                     next_state   = WAIT1;
-                    next_dram_en = 0;
+                    //next_dram_en = 0;
                 end
 
             WAIT1:
@@ -91,6 +91,7 @@ module fetch(clk, reset, en, new_addr, new_addr_valid, dram_en, dram_rdwr, dram_
                             next_state = DRAM2_START;
                             next_dram_en    = 8'b11111111;
                             next_dram_rdwr  = 1'b1; // Read
+                            next_entry[127:64] = dram_data; // fill in entry info except for the nested table pointer
                             for (int i = 0; i < 8; i=i+1)
                             begin
                                 next_dram_addr[i]  = next_addr + i; // next_addr has been set to point to the 64b address
@@ -109,7 +110,7 @@ module fetch(clk, reset, en, new_addr, new_addr_valid, dram_en, dram_rdwr, dram_
             DRAM2_START:
                 begin
                     next_state   = WAIT2;
-                    next_dram_en = 0;
+                    //next_dram_en = 0;
                 end
 
             WAIT2:

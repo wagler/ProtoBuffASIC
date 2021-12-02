@@ -31,6 +31,17 @@ module fetch_tb;
         .ob_valid(ob_valid)
     );
 
+    DRAM dram(
+        .clk(clk),
+        .reset(reset),
+        .en(dram_en),
+        .rdwr(dram_rdwr),
+        .data_in({64{1'b0}}),
+        .addr(dram_addr),
+        .data_out(dram_data),
+        .valid(dram_valid)
+    );
+
     initial
     begin
         clk = 0;
@@ -41,24 +52,39 @@ module fetch_tb;
 
     initial
     begin
-        $monitor("@%g state=%d, reset=%b, en=%b, dram_en=%b, dram_addr=%h, ob_valid=%b, entry=%h", $time, f.state, reset, en, dram_en, dram_addr, ob_valid, entry);
+        $dumpfile("fetch.vcd");
+        $dumpvars;
+    end
+
+    initial
+    begin
+        $monitor("@%g state=%d, reset=%b, en=%b, dram_en=%b, dram_addr=%h, dram_valid=%b, dram_data=%h, ob_valid=%b, entry=%h", $time, f.state, reset, en, dram_en, dram_addr, dram_valid, dram_data, ob_valid, entry);
         reset = 1;
         en = 0;
         @(negedge clk);
         reset = 0;
         en = 0;
-        @(negedge clk);
         new_addr_valid = 0;
-        dram_valid = 1;
-        dram_data = 64'h0102030405060708;
+
+        // Realistically, we could do this before the dram gets reset, because dram doesn't actually
+        // clear its values when it gets reset, but we'll just do it after reset.
+        $readmemh("testbench/demo16.mem", dram.mem);
+        $display("Loaded the following data into memory at address 0x0");
+        for (int i = 0; i < 16; i=i+1)
+        begin
+            $write("%h ",dram.mem[i]);
+        end
+        $write("\n");
+
+        @(negedge clk);
         ob_full = 0;
         en = 1;
-
-        for (int i=0; i < 21; i=i+1)
+        @(negedge clk)
+        en = 0;
+        for (int i = 0; i < 100; i=i+1)
         begin
             @(negedge clk);
         end
-    
         $finish;
     end
 endmodule

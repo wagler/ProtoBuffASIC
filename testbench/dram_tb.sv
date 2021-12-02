@@ -50,7 +50,7 @@ module dram_tb;
         @(negedge clk);
 
         // Simple write test
-        data_in[0] = 64'd1;
+        data_in[0] = 8'd1;
         addr[0] = 64'd0;
         en[0] = 1'b1;
         rdwr = 1'd0;
@@ -75,6 +75,8 @@ module dram_tb;
         end
 
         // Write to two addresses, simultaneously
+        data_in[0] = 8'hbe;
+        data_in[1] = 8'hef;
         addr[0] = 64'd1;
         addr[1] = 64'd2;
         rdwr = 1'b0;
