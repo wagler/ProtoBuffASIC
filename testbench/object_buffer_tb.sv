@@ -63,31 +63,35 @@ module object_buffer_tb;
         $display("\t  +-------------------------------------------------------------------------------------+");
         $display("\t  |    entry    | valid | Field ID  | Type | Offset | Size  | Nested | Nested Table Addr|");
         $display("\t  +-------------------------------------------------------------------------------------+");
-        for (int i = 0; i < 2; i=i+1)
+        for (int i = 0; i < 64; i=i+1)
         begin
 
-            if (ob.curr == i)
+            if (ob.entries[i].valid)
             begin
-                $display("\t->| %d |   %b   | %d |  %d  | %d  | %d |   %b    | %h |", 
-                    i, ob.entries[i].valid, ob.entries[i].entry.field_id, ob.entries[i].entry.field_type, 
-                    ob.entries[i].entry.offset, ob.entries[i].entry.size, ob.entries[i].entry.nested, ob.entries[i].entry.nested_type_table
-                );            
+                if (ob.curr == i)
+                begin
+                    $display("\t->| %d |   %b   | %d |  %d  | %d  | %d |   %b    | %h |", 
+                        i, ob.entries[i].valid, ob.entries[i].entry.field_id, ob.entries[i].entry.field_type, 
+                        ob.entries[i].entry.offset, ob.entries[i].entry.size, ob.entries[i].entry.nested, ob.entries[i].entry.nested_type_table
+                    );            
+                end
+                else
+                begin
+                    $display("\t  | %d |   %b   | %d |  %d  | %d  | %d |   %b    | %h |", 
+                        i, ob.entries[i].valid, ob.entries[i].entry.field_id, ob.entries[i].entry.field_type, 
+                        ob.entries[i].entry.offset, ob.entries[i].entry.size, ob.entries[i].entry.nested, ob.entries[i].entry.nested_type_table
+                    );
+                end
+                $display("\t  +-------------------------------------------------------------------------------------+");
             end
-            else
-            begin
-                $display("\t  | %d |   %b   | %d |  %d  | %d  | %d |   %b    | %h |", 
-                    i, ob.entries[i].valid, ob.entries[i].entry.field_id, ob.entries[i].entry.field_type, 
-                    ob.entries[i].entry.offset, ob.entries[i].entry.size, ob.entries[i].entry.nested, ob.entries[i].entry.nested_type_table
-                );
-            end
-            $display("\t  +-------------------------------------------------------------------------------------+");
         end
     endtask
 
     initial
     begin
-        $readmemh("testbench/table1.mem", dram.mem);
-        $readmemh("testbench/table2.mem", dram.mem, 64'h100);
+        $readmemh("testbench/table3.mem", dram.mem);
+        $readmemh("testbench/table4.mem", dram.mem, 64'h100);
+        $readmemh("testbench/table5.mem", dram.mem, 64'h200);
         $monitor("@%g reset=%b, full=%b, valid_in=%b, new_entry=%h, curr=%d", $time, reset, full, valid_in, new_entry, ob.curr);
         reset = 1;
         fetch_en = 0;
@@ -101,10 +105,13 @@ module object_buffer_tb;
         fetch_new_addr_en = 0;
         @(negedge clk);
         fetch_en = 1;
-        while(~valid_in) @(negedge clk);
-        @(negedge clk);
 
-        print_ob();
+        for (int i = 0; i < 10; i=i+1)
+        begin
+            while(~valid_in) @(negedge clk);
+            @(negedge clk);
+            print_ob();
+        end
         $write("\n");
         $finish;
     end
