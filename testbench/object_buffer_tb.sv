@@ -106,7 +106,7 @@ module object_buffer_tb;
         @(negedge clk);
         fetch_en = 1;
 
-        for (int i = 0; i < 10; i=i+1)
+        for (int i = 0; i < 9; i=i+1)
         begin
             while(~valid_in) @(negedge clk);
             @(negedge clk);
