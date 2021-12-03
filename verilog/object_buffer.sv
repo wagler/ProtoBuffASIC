@@ -38,6 +38,7 @@ module object_buffer(clk, reset, new_entry, valid_in, full);
     always_comb
     begin
         next_curr = curr;
+        next_entries = entries;
 
         // Check for vacant entries
         next_full = 1'b1;

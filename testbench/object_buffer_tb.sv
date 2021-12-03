@@ -4,37 +4,43 @@ module object_buffer_tb;
     TABLE_ENTRY new_entry;
     logic valid_in;
     logic full;
-/*
+
     logic fetch_en;
-    logic [63:0] new_addr;
+    logic [63:0] fetch_new_addr;
+    logic fetch_new_addr_en;
+    logic [7:0] fetch_dram_valid;
+    logic [7:0] fetch_dram_en;
+    logic fetch_dram_rdwr;
+    logic [7:0][7:0] fetch_dram_data;
+    logic [7:0][63:0] fetch_dram_addr;
     
     fetch f(
         .clk(clk),
         .reset(reset),
-        .en(en),
-        .new_addr(new_addr),
-        .new_addr_valid(new_addr_valid),
-        .dram_valid(dram_valid),
-        .dram_data(dram_data),
-        .dram_en(dram_en),
-        .dram_rdwr(dram_rdwr),
-        .dram_addr(dram_addr),
-        .entry(entry),
-        .ob_full(ob_full),
-        .ob_valid(ob_valid)
+        .en(fetch_en),
+        .new_addr(fetch_new_addr),
+        .new_addr_valid(fetch_new_addr_en),
+        .dram_valid(fetch_dram_valid),
+        .dram_data(fetch_dram_data),
+        .dram_en(fetch_dram_en),
+        .dram_rdwr(fetch_dram_rdwr),
+        .dram_addr(fetch_dram_addr),
+        .entry(new_entry),
+        .ob_full(full),
+        .ob_valid(valid_in)
     );
 
     DRAM dram(
         .clk(clk),
         .reset(reset),
-        .en(dram_en),
-        .rdwr(dram_rdwr),
+        .en(fetch_dram_en),
+        .rdwr(fetch_dram_rdwr),
         .data_in({64{1'b0}}),
-        .addr(dram_addr),
-        .data_out(dram_data),
-        .valid(dram_valid)
+        .addr(fetch_dram_addr),
+        .data_out(fetch_dram_data),
+        .valid(fetch_dram_valid)
     );
-*/
+
     object_buffer ob(
         .clk(clk), 
         .reset(reset), 
@@ -51,27 +57,55 @@ module object_buffer_tb;
     always
         #1 clk = !clk;
 
-    /*
-    initial
-    begin
-        $dumpfile("dram.vcd");
-        $dumpvars;
-    end
-    */
+    task print_ob;
+        $display("\t  +-------------------------------------------------------------------------------------+");
+        $display("\t  |                                 Object Buffer        @%g                            |",$time);
+        $display("\t  +-------------------------------------------------------------------------------------+");
+        $display("\t  |    entry    | valid | Field ID  | Type | Offset | Size  | Nested | Nested Table Addr|");
+        $display("\t  +-------------------------------------------------------------------------------------+");
+        for (int i = 0; i < 2; i=i+1)
+        begin
+
+            if (ob.curr == i)
+            begin
+                $display("\t->| %d |   %b   | %d |  %d  | %d  | %d |   %b    | %h |", 
+                    i, ob.entries[i].valid, ob.entries[i].entry.field_id, ob.entries[i].entry.field_type, 
+                    ob.entries[i].entry.offset, ob.entries[i].entry.size, ob.entries[i].entry.nested, ob.entries[i].entry.nested_type_table
+                );            
+            end
+            else
+            begin
+                $display("\t  | %d |   %b   | %d |  %d  | %d  | %d |   %b    | %h |", 
+                    i, ob.entries[i].valid, ob.entries[i].entry.field_id, ob.entries[i].entry.field_type, 
+                    ob.entries[i].entry.offset, ob.entries[i].entry.size, ob.entries[i].entry.nested, ob.entries[i].entry.nested_type_table
+                );
+            end
+            $display("\t  +-------------------------------------------------------------------------------------+");
+        end
+    endtask
 
     initial
     begin
-        $monitor("@%g reset=%b, full=%b, valid_in=%b, new_entry=%h, curr=%d", $time, reset, full, valid_in, new_entry, ob.curr );
+        $readmemh("testbench/table1.mem", dram.mem);
+        $readmemh("testbench/table2.mem", dram.mem, 64'h100);
+        $monitor("@%g reset=%b, full=%b, valid_in=%b, new_entry=%h, curr=%d", $time, reset, full, valid_in, new_entry, ob.curr);
         reset = 1;
+        fetch_en = 0;
+        fetch_new_addr_en = 0;
         @(negedge clk);
         @(negedge clk);
         reset = 0;
-        new_entry = 128'h00_00_00_09_40_18_00_08_XX_XX_XX_XX_XX_XX_XX_XX;
-        valid_in = 1;
+        fetch_new_addr = 0;
+        fetch_new_addr_en = 1;
         @(negedge clk);
-        valid_in = 0;
+        fetch_new_addr_en = 0;
+        @(negedge clk);
+        fetch_en = 1;
+        while(~valid_in) @(negedge clk);
         @(negedge clk);
 
+        print_ob();
+        $write("\n");
         $finish;
     end
 endmodule
