@@ -42,6 +42,44 @@ module fetch_tb;
         .valid(dram_valid)
     );
 
+    task ras_printer;
+        $display("\t+-----------------------------------+");
+        $display("\t|     Return Address Stack  @%g     |",$time);
+        $display("\t|-----------------------------------|");
+        $display("\t|   item#    |                      |");
+        $display("\t+-----------------------------------+");
+        for (int i = 0; i < 3; i=i+1)
+        begin
+            if (i == f.ret_addr_stack_ptr)
+                $write("->\t|%d : 0x%h   |\n", i, f.ret_addr_stack[i]);
+            else
+                $write("\t|%d : 0x%h   |\n", i, f.ret_addr_stack[i]);
+        end
+        $display("\t+-----------------------------------+");
+    endtask
+
+    task draw_fetch_info;
+        $display("\t+-----------------------------------+");
+        $display("\t|        Current Fetch Info  @%g    |",$time);
+        $display("\t|-----------------------------------|");
+        $display("\t| en       |                      %b |",en);
+        $display("\t+-----------------------------------+");
+        $display("\t| state    |                      %d |",f.state);
+        $display("\t+-----------------------------------+");
+        $display("\t| ob valid |                      %h |",ob_valid);
+        $display("\t| entry    |     0x%h |",entry[127:64]);
+        $display("\t|          |     0x%h |",entry[63:0]);
+        $display("\t+-----------------------------------+");
+        $display("\t| address  |     0x%h |",fetch.addr);
+        $display("\t+-----------------------------------+");
+        $display("\t| DRAM en  |               %b |",dram_en);
+        $display("\t+-----------------------------------+");
+        $display("\t| DRAM addr|     0x%h |",dram_addr[0]);
+        $display("\t|          |     0x%h |",dram_addr[7]);
+        $display("\t+-----------------------------------+");
+
+    endtask
+
     initial
     begin
         clk = 0;
@@ -52,7 +90,7 @@ module fetch_tb;
 
     initial
     begin
-        $monitor("@%g state=%d, reset=%b, en=%b, dram_en=%b, dram_addr=%h, dram_valid=%b, dram_data=%h, ob_valid=%b, entry=%h, ras_ptr=%h, ras_val=%h", $time, f.state, reset, en, dram_en, dram_addr, dram_valid, dram_data, ob_valid, entry, f.ret_addr_stack_ptr, f.ret_addr_stack[f.ret_addr_stack_ptr]);
+        //$monitor("@%g state=%d, reset=%b, en=%b, dram_en=%b, dram_addr=%h, dram_valid=%b, dram_data=%h, ob_valid=%b, entry=%h, ras_ptr=%h, ras_val=%h", $time, f.state, reset, en, dram_en, dram_addr, dram_valid, dram_data, ob_valid, entry, f.ret_addr_stack_ptr, f.ret_addr_stack[f.ret_addr_stack_ptr]);
         reset = 1;
         en = 0;
         @(negedge clk);
@@ -142,25 +180,30 @@ module fetch_tb;
         en = 1;
         
         while(~ob_valid) @(negedge clk);
+        draw_fetch_info();
+        ras_printer();
         @(negedge clk);
+
         while(~ob_valid) @(negedge clk);
+        draw_fetch_info();
+        ras_printer();
         @(negedge clk);
+
         while(~ob_valid) @(negedge clk);
+        ras_printer();
+        draw_fetch_info();
         @(negedge clk);
+
         while(~ob_valid) @(negedge clk);
+        ras_printer();
+        draw_fetch_info();
         @(negedge clk);
+
         while(~ob_valid) @(negedge clk);
+        ras_printer();
+        draw_fetch_info();
         @(negedge clk);
         en = 0;
-
-        for (int i = 0; i < 3; i=i+1)
-        begin
-            if (i == f.ret_addr_stack_ptr)
-            begin
-                $write("->");
-            end
-            $write("%d : %h\n", i, f.ret_addr_stack[i]);
-        end
 
    /*
         $readmemh("simple_proto/sim.table", dram.mem);
@@ -185,7 +228,6 @@ module fetch_tb;
             $display("%d : %h", i, f.ret_addr_stack[i]);
         end
 */    
-
         $finish;
     end
 endmodule
