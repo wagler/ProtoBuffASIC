@@ -26,12 +26,4 @@ module top_varint(value, field_type, out_port);
 			.out_port(out_port[79:0])
 	);
 
-	/*
-	field_header fh1(
-			.field_id(field_id),
-			.field_type(field_type),
-			.out_port(out_port[39:0])
-	);
-	*/
-
 endmodule

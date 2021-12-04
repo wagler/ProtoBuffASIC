@@ -5,8 +5,8 @@ module fetch_tb;
     logic [63:0] new_addr;
     logic new_addr_valid;
 
-    logic [7:0]       dram_valid;
-    logic [7:0][7:0]  dram_data;
+    logic [15:0]       dram_valid;
+    logic [15:0][7:0]  dram_data;
     logic [7:0]       dram_en;
     logic             dram_rdwr;
     logic [7:0][63:0] dram_addr;
@@ -21,8 +21,8 @@ module fetch_tb;
         .en(en),
         .new_addr(new_addr),
         .new_addr_valid(new_addr_valid),
-        .dram_valid(dram_valid),
-        .dram_data(dram_data),
+        .dram_valid(dram_valid[7:0]),
+        .dram_data(dram_data[7:0]),
         .dram_en(dram_en),
         .dram_rdwr(dram_rdwr),
         .dram_addr(dram_addr),
@@ -34,10 +34,10 @@ module fetch_tb;
     DRAM dram(
         .clk(clk),
         .reset(reset),
-        .en(dram_en),
-        .rdwr(dram_rdwr),
-        .data_in({64{1'b0}}),
-        .addr(dram_addr),
+        .en({{8{1'b0}},dram_en}),
+        .rdwr({1'b0,dram_rdwr}),
+        .data_in({128{1'b0}}),
+        .addr({{512{1'b0}},dram_addr}),
         .data_out(dram_data),
         .valid(dram_valid)
     );
@@ -99,7 +99,7 @@ module fetch_tb;
         new_addr_valid = 0;
         ob_full = 0;
 
-        /*
+     /*  
         // Realistically, we could do this before the dram gets reset, because dram doesn't actually
         // clear its values when it gets reset, but we'll just do it after reset.
         $readmemh("testbench/demo16.mem", dram.mem);
@@ -155,13 +155,15 @@ module fetch_tb;
         @(negedge clk)
         en = 0;
         while(~ob_valid) @(negedge clk);
-*/
+
         // Tests 2 tables in memory
         reset = 1;
         en = 0;
         @(negedge clk);
-        @(negedge clk);
         reset = 0;
+        draw_fetch_info();
+        ras_printer();
+        @(negedge clk);
 
         $readmemh("testbench/table1.mem", dram.mem);
         $readmemh("testbench/table2.mem", dram.mem, 64'h100);
@@ -175,7 +177,6 @@ module fetch_tb;
             $write("@0x%h : %h\n", i, dram.mem[i]);
         end
 
-        en = 0;
         @(negedge clk);
         en = 1;
         
@@ -204,8 +205,9 @@ module fetch_tb;
         draw_fetch_info();
         @(negedge clk);
         en = 0;
+*/        
 
-   /*
+/*   
         $readmemh("simple_proto/sim.table", dram.mem);
         $display("Loaded the following data into memory at address 0x0");
         for (int i = 0; i < 16; i=i+1)
@@ -227,7 +229,27 @@ module fetch_tb;
         begin
             $display("%d : %h", i, f.ret_addr_stack[i]);
         end
-*/    
+*/
+
+        
+        $readmemh("testbench/table3.mem", dram.mem);
+        $readmemh("testbench/table4.mem", dram.mem, 64'h100);
+        $readmemh("testbench/table5.mem", dram.mem, 64'h200);
+
+        @(negedge clk);
+        ob_full = 0;
+
+        for (int i = 0; i < 9; i+=1)
+        begin
+            en = 1;
+            @(negedge clk)
+            en = 0;
+            while(~ob_valid) @(negedge clk);
+            ras_printer();
+            draw_fetch_info();
+            @(negedge clk);
+        end
+
         $finish;
     end
 endmodule

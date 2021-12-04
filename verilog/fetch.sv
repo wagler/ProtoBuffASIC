@@ -155,7 +155,7 @@ module fetch(clk, reset, en, new_addr, new_addr_valid, dram_en, dram_rdwr, dram_
 
                         // Set the current ret addr stack entry to the next address for this object
                         // then add this nested class's table pointer to the stack
-                        next_ret_addr_stack[ret_addr_stack_ptr] = addr + 8;;
+                        next_ret_addr_stack[ret_addr_stack_ptr] = addr + 8;
                         next_ret_addr_stack_ptr = ret_addr_stack_ptr + 1;
                         next_ret_addr_stack[next_ret_addr_stack_ptr] = dram_data;
                     end
