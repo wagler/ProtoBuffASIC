@@ -106,10 +106,14 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
         next_out_entry_valid = next_entries[next_curr].valid & ser_ready;
         
         // Serialization is going to happen on a nested object, so add it to the stack
-        if (next_entries[next_curr].valid & next_entries[next_curr].entry.nested)
+        if ((next_curr != curr) & next_entries[next_curr].valid & next_entries[next_curr].entry.nested)
         begin
             next_cpp_obj_ptr_stack_ptr = cpp_obj_ptr_stack_ptr + 1;
             next_cpp_obj_ptr_stack[next_cpp_obj_ptr_stack_ptr] = cpp_obj_ptr_stack[cpp_obj_ptr_stack_ptr] + next_entries[next_curr].entry.offset;
+        end
+        else if (entries[curr].valid & (entries[curr].entry.field_id == 0) & (cpp_obj_ptr_stack_ptr > 0))
+        begin
+            next_cpp_obj_ptr_stack_ptr = cpp_obj_ptr_stack_ptr - 1;
         end
         next_cpp_base_addr = new_cpp_base_addr_valid ? new_cpp_base_addr : next_cpp_obj_ptr_stack[next_cpp_obj_ptr_stack_ptr];
     end

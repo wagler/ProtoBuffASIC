@@ -110,7 +110,7 @@ module object_buffer_tb;
         $display("\t  +--------------------------------------------------+");
         for (int i = 0; i < 16; i=i+1)
         begin
-            if (ob.curr == i)
+            if (ob.cpp_obj_ptr_stack_ptr == i)
                 $display("\t->|%d            |        %h  |",i, ob.cpp_obj_ptr_stack[i]);
             else
                 $display("\t  |%d            |        %h  |",i, ob.cpp_obj_ptr_stack[i]);
@@ -148,7 +148,7 @@ module object_buffer_tb;
             print_ob();
         end
 
-        for (int i = 0; i < 3; i=i+1)
+        for (int i = 0; i < 8; i=i+1)
         begin
             ser_ready = 0;
             @(negedge clk);
