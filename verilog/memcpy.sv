@@ -1,20 +1,22 @@
-module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_addr, dram_data_in, dram_data_out, dram_valid);
+module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_rdwr, dram_addr, dram_data_in, dram_data_out, dram_valid);
 
     input logic clk, reset, en;
-    input logic [63:0], src, dst;
+    input logic [63:0] src, dst;
     input logic [14:0] size;
     input logic [7:0] dram_valid;
-    input logic [7:0][63:0] dram_data_in;
+    input logic [7:0][7:0] dram_data_in;
 
     output logic done;
     output logic [7:0] dram_en;
+    output logic dram_rdwr;
     output logic [7:0][63:0] dram_addr;
     output logic [7:0][7:0] dram_data_out;
 
-    logic [4:0] cnt, next_count;
+    logic [4:0] cnt, next_cnt;
     logic [14:0] bytes_copied, next_bytes_copied;
     logic next_done;
     logic [7:0] next_dram_en;
+    logic next_dram_rdwr;
     logic [7:0][63:0] next_dram_addr;
     logic [7:0][7:0] next_dram_data_out;
 
@@ -32,6 +34,7 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_addr, dram_dat
         next_state = state;
         next_done = done;
         next_dram_en = dram_en;
+        next_dram_rdwr = dram_rdwr;
         next_dram_addr = dram_addr;
         next_dram_data_out = dram_data_out;
         next_cnt = cnt;
@@ -46,9 +49,10 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_addr, dram_dat
                     if (en)
                     begin
                         next_state = RD_DRAM_SETUP;
+                        next_dram_rdwr = 1'b1;
                         for (int i = 0; i < 8; i=i+1)
                         begin
-                            next_dram_en[i] = (bytes_copied + i) <= size;
+                            next_dram_en[i] = (bytes_copied + i + 1) <= size;
                             next_dram_addr[i] = src + bytes_copied + i;
                         end
                     end
@@ -65,13 +69,17 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_addr, dram_dat
                     if(dram_valid == 0)
                         next_state = RD_DRAM_WAIT;
                     else
+                    begin
                         next_state = WR_DRAM_SETUP;
                         
-                    for (int i = 0; i < 8; i=i+1)
-                    begin
-                        next_dram_en[i] = (bytes_copied + i) <= size;
-                        next_dram_addr[i] = dst + bytes_copied + i;
-                        next_bytes_copied += next_dram_en[i];
+                        next_dram_rdwr = 1'b0;
+                        for (int i = 0; i < 8; i=i+1)
+                        begin
+                            next_dram_en[i] = (bytes_copied + i + 1) <= size;
+                            next_dram_addr[i] = dst + bytes_copied + i;
+                            next_bytes_copied += next_dram_en[i];
+                            next_dram_data_out[i] = dram_data_in[i];
+                        end
                     end
                 end
 
@@ -87,16 +95,21 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_addr, dram_dat
                     if (cnt == 20 && (bytes_copied == size))
                     begin
                         next_state = DONE;
-                        next_done = 0;
+                        next_done = 1;
                     end
                     else if (cnt == 20 && (bytes_copied < size))
                     begin
                         next_state = RD_DRAM_SETUP;
                         for (int i = 0; i < 8; i=i+1)
                         begin
-                            next_dram_en[i] = (bytes_copied + i) <= size;
+                            next_dram_en[i] = (bytes_copied + i + 1) <= size;
                             next_dram_addr[i] = src + bytes_copied + i;
                         end
+                    end
+                    else
+                    begin
+                        next_state = WR_DRAM_WAIT;
+                        next_cnt = cnt + 1;
                     end
                 end
 
@@ -115,6 +128,7 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_addr, dram_dat
             state           <= #1 IDLE;
             done            <= #1 0;
             dram_en         <= #1 0;
+            dram_rdwr       <= #1 0;
             dram_addr       <= #1 0;
             dram_data_out   <= #1 0; 
             cnt             <= #1 0;
@@ -125,6 +139,7 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_addr, dram_dat
             state           <= #1 next_state;
             done            <= #1 next_done;
             dram_en         <= #1 next_dram_en;
+            dram_rdwr       <= #1 next_dram_rdwr;
             dram_addr       <= #1 next_dram_addr;
             dram_data_out   <= #1 next_dram_data_out;
             cnt             <= #1 next_cnt;
