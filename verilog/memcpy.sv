@@ -100,6 +100,7 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_rdwr, dram_add
                     else if (cnt == 20 && (bytes_copied < size))
                     begin
                         next_state = RD_DRAM_SETUP;
+                        next_dram_rdwr = 1'b1;
                         for (int i = 0; i < 8; i=i+1)
                         begin
                             next_dram_en[i] = (bytes_copied + i + 1) <= size;
