@@ -29,8 +29,11 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_rdwr, dram_add
     parameter [2:0] WR_DRAM_WAIT    = 3'd4;
     parameter [2:0] DONE            = 3'd5;
 
+    int sub, i;
     always_comb
     begin
+        i = 0;
+
         next_state = state;
         next_done = done;
         next_dram_en = dram_en;
@@ -50,10 +53,11 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_rdwr, dram_add
                     begin
                         next_state = RD_DRAM_SETUP;
                         next_dram_rdwr = 1'b1;
-                        for (int i = 0; i < 8; i=i+1)
+                        for (i = 0; i < 8; i=i+1)
                         begin
-                            next_dram_en[i] = (bytes_copied + i + 1) <= size;
-                            next_dram_addr[i] = src + bytes_copied + i;
+                            sub = (size - 1 - bytes_copied - i);
+                            next_dram_en[i] = sub >= 0;
+                            next_dram_addr[i] = src + (size - 1 - bytes_copied - i);
                         end
                     end
                 end
@@ -73,10 +77,11 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_rdwr, dram_add
                         next_state = WR_DRAM_SETUP;
                         
                         next_dram_rdwr = 1'b0;
-                        for (int i = 0; i < 8; i=i+1)
+                        for (i = 0; i < 8; i=i+1)
                         begin
-                            next_dram_en[i] = (bytes_copied + i + 1) <= size;
-                            next_dram_addr[i] = dst + bytes_copied + i;
+                            sub = (size - 1 - bytes_copied - i);
+                            next_dram_en[i] = sub >= 0;
+                            next_dram_addr[i] = dst + (size - 1 - bytes_copied - i);
                             next_bytes_copied += next_dram_en[i];
                             next_dram_data_out[i] = dram_data_in[i];
                         end
@@ -101,10 +106,11 @@ module memcpy(clk, reset, en, src, dst, size, done, dram_en, dram_rdwr, dram_add
                     begin
                         next_state = RD_DRAM_SETUP;
                         next_dram_rdwr = 1'b1;
-                        for (int i = 0; i < 8; i=i+1)
+                        for (i = 0; i < 8; i=i+1)
                         begin
-                            next_dram_en[i] = (bytes_copied + i + 1) <= size;
-                            next_dram_addr[i] = src + bytes_copied + i;
+                            sub = (size - 1 - bytes_copied - i);
+                            next_dram_en[i] = sub >= 0; 
+                            next_dram_addr[i] = src + (size - 1 - bytes_copied - i);
                         end
                     end
                     else

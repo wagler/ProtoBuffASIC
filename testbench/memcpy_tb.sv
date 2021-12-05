@@ -82,6 +82,7 @@ module memcpy_tb;
         ram.mem[64'h10C] = 8'h56;
         ram.mem[64'h10D] = 8'h78;
         ram.mem[64'h10E] = 8'h61;
+        ram.mem[64'h10F] = 8'h11;
 
         @(negedge clk);
         reset = 1'b1;
@@ -91,17 +92,17 @@ module memcpy_tb;
         memcpy_en = 1'b0;
         src = 64'h100;
         dst = 64'h200;
-        size = 15'd15;
+        size = 15'd16;
         @(negedge clk);
         memcpy_en = 1'b1;
         @(negedge clk);
         while(~done) @(negedge clk);
 
-        for (int i = 'h100; i < 'h10F; i=i+1)
+        for (int i = 'h100; i <= 'h10F; i=i+1)
         begin
             $display("mem[%h] = %h",i,ram.mem[i]);
         end
-        for (int i = 'h200; i < 'h20F; i=i+1)
+        for (int i = 'h200; i <= 'h20F; i=i+1)
         begin
             $display("mem[%h] = %h",i,ram.mem[i]);
         end
