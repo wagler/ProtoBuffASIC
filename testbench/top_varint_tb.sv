@@ -52,12 +52,39 @@ module top_varint_tb;
 
         $monitor("@%g reset=%b, en=%b, field_type=%d, dst_addr=%h, dram_en=%b, dram_addr=%h, dram_rdwr=%b, dram_data=%h, done=%b, waiting=%b, second=%b, varint_out=%h, bytes_written=%d", $time, reset, en, field_type, dst_addr, dram_en, dram_addr, dram_rdwr, dram_data, done, tv1.waiting, tv1.second, tv1.vsout, bytes_written);
 
+        // Testcase 1
         reset = 1;
         en = 0;
         @(negedge clk);
         reset = 0;
         value = 64'd150;
         field_type = 5'd5;
+        dst_addr = 64'h100;
+        en = 1;
+        @(negedge clk);
+        while (~done) @(negedge clk);
+
+        // Testcase 2
+        @(negedge clk);
+        reset = 1;
+        en = 0;
+        @(negedge clk);
+        reset = 0;
+        value = 64'hFFFF_FFFF;
+        field_type = 5'd5;
+        dst_addr = 64'h100;
+        en = 1;
+        @(negedge clk);
+        while (~done) @(negedge clk);
+
+        // Testcase 3
+        @(negedge clk);
+        reset = 1;
+        en = 0;
+        @(negedge clk);
+        reset = 0;
+        value = 64'hFFFF_FFFF_FFFF_FFFF;
+        field_type = 5'd3;
         dst_addr = 64'h100;
         en = 1;
         @(negedge clk);

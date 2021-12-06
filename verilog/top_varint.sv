@@ -34,8 +34,8 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
 	wire [63:0] zz_output;
 
 	assign zz_en = (field_type == 5'd17 || field_type == 5'd18) ? 1'b1 : 1'b0;
-	assign is_32_input = field_type == 5'd17;
-
+	//assign is_32_input = field_type == 5'd17;
+    assign is_32_input = (field_type == 5'd2) | (field_type == 5'd5) | (field_type == 5'd7) | (field_type == 5'd13) | (field_type == 5'd15) | (field_type == 5'd17);
 
 	zigzag z1(
 			.en(zz_en),
@@ -44,7 +44,8 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
 			.out_val(zz_output)
 	);
 
-	assign varint_ser_input = zz_en ? zz_output : value;
+    // Ensures we don't accidentally pickup leading 1's from accidental sign extension
+	assign varint_ser_input = zz_en ? zz_output : (is_32_input ? (64'h00_00_00_00_ff_ff_ff_ff & value) : value);
 
 	varint_ser vs1(
 			.in_port(varint_ser_input),
@@ -106,7 +107,7 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
                 next_dram_data[6] = next_vsout[55:48];
                 next_dram_data[7] = next_vsout[63:56];
 
-                next_second = 1;
+                next_second = (|next_vsout[71:64]) | (|next_vsout[79:72]);
                 next_waiting = 1;
             end
             else if(~waiting & second)
@@ -115,9 +116,9 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
                 next_waiting = 1;
 
                 next_dram_en = 0;
-                next_dram_en[0] = |next_vsout[71];
+                next_dram_en[0] = |next_vsout[71:64];
                 next_bytes_written +=  next_dram_en[0];
-                next_dram_en[1] = |next_vsout[79];
+                next_dram_en[1] = |next_vsout[79:72];
                 next_bytes_written +=  next_dram_en[0];
 
                 next_dram_addr = 0;
@@ -138,7 +139,7 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
             begin
                 next_cnt = 0;
                 next_waiting = 0;
-                next_done = 1;
+                next_done = ~second;
             end
         end
         else
