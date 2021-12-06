@@ -64,6 +64,11 @@ module top_varint_tb;
         @(negedge clk);
         while (~done) @(negedge clk);
 
+        for (int i = 64'h100; i >= 64'h0FE; i-=1)
+        begin
+            $display("mem[%h]=%h", i, ram.mem[i]);
+        end
+
         // Testcase 2
         @(negedge clk);
         reset = 1;
@@ -76,6 +81,11 @@ module top_varint_tb;
         en = 1;
         @(negedge clk);
         while (~done) @(negedge clk);
+
+        for (int i = 64'h100; i >= 64'h0F0; i-=1)
+        begin
+            $display("mem[%h]=%h", i, ram.mem[i]);
+        end
 
         // Testcase 3
         @(negedge clk);
@@ -90,7 +100,43 @@ module top_varint_tb;
         @(negedge clk);
         while (~done) @(negedge clk);
 
-        for (int i = 64'h100; i <= 64'h10A; i+=1)
+        for (int i = 64'h100; i >= 64'h0F0; i-=1)
+        begin
+            $display("mem[%h]=%h", i, ram.mem[i]);
+        end
+
+        // Testcase 4
+        @(negedge clk);
+        reset = 1;
+        en = 0;
+        @(negedge clk);
+        reset = 0;
+        value = 64'hFFFF_FFFF_FFFF_FFFE;
+        field_type = 5'd17; //SINT32
+        dst_addr = 64'h100;
+        en = 1;
+        @(negedge clk);
+        while (~done) @(negedge clk);
+
+        for (int i = 64'h100; i >= 64'h0F0; i-=1)
+        begin
+            $display("mem[%h]=%h", i, ram.mem[i]);
+        end
+
+        // Testcase 5
+        @(negedge clk);
+        reset = 1;
+        en = 0;
+        @(negedge clk);
+        reset = 0;
+        value = 64'hFFFF_FFFF_FFFF_FFFE;
+        field_type = 5'd18; //SINT64
+        dst_addr = 64'h100;
+        en = 1;
+        @(negedge clk);
+        while (~done) @(negedge clk);
+
+        for (int i = 64'h100; i >= 64'h0F0; i-=1)
         begin
             $display("mem[%h]=%h", i, ram.mem[i]);
         end

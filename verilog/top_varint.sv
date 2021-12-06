@@ -70,64 +70,75 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
         if (en)
         begin
             next_vsout = out;
-            if (~waiting & ~second)
-            begin
-                next_dram_en[0] = |next_vsout[7:0];
-                next_bytes_written +=  next_dram_en[0];
-                next_dram_en[1] = |next_vsout[15:8];
-                next_bytes_written +=  next_dram_en[1];
-                next_dram_en[2] = |next_vsout[23:16];
-                next_bytes_written +=  next_dram_en[2];
-                next_dram_en[3] = |next_vsout[31:24];
-                next_bytes_written +=  next_dram_en[3];
-                next_dram_en[4] = |next_vsout[39:32];
-                next_bytes_written +=  next_dram_en[4];
-                next_dram_en[5] = |next_vsout[47:40];
-                next_bytes_written +=  next_dram_en[5];
-                next_dram_en[6] = |next_vsout[55:48];
-                next_bytes_written +=  next_dram_en[6];
-                next_dram_en[7] = |next_vsout[63:56];
-                next_bytes_written +=  next_dram_en[7];
-
-                next_dram_addr[0] = dst_addr;
-                next_dram_addr[1] = dst_addr + 1;
-                next_dram_addr[2] = dst_addr + 2;
-                next_dram_addr[3] = dst_addr + 3;
-                next_dram_addr[4] = dst_addr + 4;
-                next_dram_addr[5] = dst_addr + 5;
-                next_dram_addr[6] = dst_addr + 6;
-                next_dram_addr[7] = dst_addr + 7;
-
-                next_dram_data[0] = next_vsout[7:0];
-                next_dram_data[1] = next_vsout[15:8];
-                next_dram_data[2] = next_vsout[23:16];
-                next_dram_data[3] = next_vsout[31:24];
-                next_dram_data[4] = next_vsout[39:32];
-                next_dram_data[5] = next_vsout[47:40];
-                next_dram_data[6] = next_vsout[55:48];
-                next_dram_data[7] = next_vsout[63:56];
-
-                next_second = (|next_vsout[71:64]) | (|next_vsout[79:72]);
-                next_waiting = 1;
-            end
-            else if(~waiting & second)
+            if (~waiting & second)
             begin
                 next_second = 0;
-                next_waiting = 1;
 
-                next_dram_en = 0;
-                next_dram_en[0] = |next_vsout[71:64];
+                next_dram_en[0] = |next_vsout[63:56];
+                next_dram_addr[0] = dst_addr - next_bytes_written;
                 next_bytes_written +=  next_dram_en[0];
-                next_dram_en[1] = |next_vsout[79:72];
-                next_bytes_written +=  next_dram_en[0];
+
+                next_dram_en[1] = |next_vsout[55:48];
+                next_dram_addr[1] = dst_addr - next_bytes_written;
+                next_bytes_written +=  next_dram_en[1];
+
+                next_dram_en[2] = |next_vsout[47:40];
+                next_dram_addr[2] = dst_addr - next_bytes_written;
+                next_bytes_written +=  next_dram_en[2];
+
+                next_dram_en[3] = |next_vsout[39:32];
+                next_dram_addr[3] = dst_addr - next_bytes_written;
+                next_bytes_written +=  next_dram_en[3];
+
+                next_dram_en[4] = |next_vsout[31:24];
+                next_dram_addr[4] = dst_addr - next_bytes_written;
+                next_bytes_written +=  next_dram_en[4];
+
+                next_dram_en[5] = |next_vsout[23:16];
+                next_dram_addr[5] = dst_addr - next_bytes_written;
+                next_bytes_written +=  next_dram_en[5];
+
+                next_dram_en[6] = |next_vsout[15:8];
+                next_dram_addr[6] = dst_addr - next_bytes_written;
+                next_bytes_written +=  next_dram_en[6];
+
+                next_dram_en[7] = |next_vsout[7:0];
+                next_dram_addr[7] = dst_addr - next_bytes_written;
+                next_bytes_written +=  next_dram_en[7];
+
+                next_dram_data[7] = next_vsout[7:0];
+                next_dram_data[6] = next_vsout[15:8];
+                next_dram_data[5] = next_vsout[23:16];
+                next_dram_data[4] = next_vsout[31:24];
+                next_dram_data[3] = next_vsout[39:32];
+                next_dram_data[2] = next_vsout[47:40];
+                next_dram_data[1] = next_vsout[55:48];
+                next_dram_data[0] = next_vsout[63:56];
+
+                //next_second = (|next_vsout[71:64]) | (|next_vsout[79:72]);
+                next_waiting = |next_dram_en;
+            end
+            else if(~waiting & ~second)
+            begin
+                next_second = 1;
+                next_waiting = 0;
 
                 next_dram_addr = 0;
-                next_dram_addr[0] = dst_addr + 8;
-                next_dram_addr[1] = dst_addr + 9;
+                next_dram_en = 0;
+
+                next_dram_en[1] = |next_vsout[79:72];
+                next_dram_addr[1] = dst_addr; // first thing written, so next_bytes_written is 0 here
+                next_bytes_written +=  next_dram_en[1];
+
+                next_dram_en[0] = |next_vsout[71:64];
+                next_dram_addr[0] = dst_addr - next_bytes_written;
+                next_bytes_written +=  next_dram_en[0];
 
                 next_dram_data = 0;
-                next_dram_data[0] = next_vsout[71:64];
                 next_dram_data[1] = next_vsout[79:72];
+                next_dram_data[0] = next_vsout[71:64];
+
+                next_waiting = |next_dram_en;
 
             end
             else if (waiting & (cnt != 20))
