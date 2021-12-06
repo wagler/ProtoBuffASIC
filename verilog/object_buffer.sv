@@ -103,7 +103,7 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
         next_out_entry = next_entries[next_curr];
 
         // Only give the output entry to the serializers once the serializers are ready
-        next_out_entry_valid = next_entries[next_curr].valid & ser_ready & (next_entries[next_curr].entry.field_id != 0);
+        next_out_entry_valid = next_entries[next_curr].valid & ser_ready;
         
         // Serialization is going to happen on a nested object, so add it to the stack
         if ((next_curr != curr) & next_entries[next_curr].valid & next_entries[next_curr].entry.nested)
