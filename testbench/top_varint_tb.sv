@@ -89,6 +89,11 @@ module top_varint_tb;
         en = 1;
         @(negedge clk);
         while (~done) @(negedge clk);
+
+        for (int i = 64'h100; i <= 64'h10A; i+=1)
+        begin
+            $display("mem[%h]=%h", i, ram.mem[i]);
+        end
 		$finish;
 
 	end
