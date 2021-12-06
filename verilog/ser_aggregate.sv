@@ -132,6 +132,7 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                         next_state = LOAD_VALUE;
                         next_ready = 0;
                         next_dram_en = 8'hFF;
+                        next_dram_rdwr = 1'b1;
                         for(int i = 0; i < 8; i+=1)
                             next_dram_addr[i] = addr + i;
                     end
@@ -184,6 +185,7 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                             next_write_point -= entry_intrnl.size;
 
                         next_dram_en = 8'h1f;
+                        next_dram_rdwr = 1'b0;
                         
                         next_dram_data_out[0] = field_header[7:0];
                         next_dram_data_out[1] = field_header[15:8];
@@ -201,6 +203,10 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                     end
                     else
                     begin
+                        next_dram_en = 0;
+                        next_dram_addr = 'hx;
+                        next_dram_data_out = 'hx;
+                        next_dram_rdwr = 0;
                         case(entry_intrnl.field_type)
                             // Varints
                             5'd1, 5'd2, 5'd3, 5'd4, 5'd5, 5'd8, 5'd13, 5'd14, 5'd15, 5'd16, 5'd17, 5'd18:
@@ -261,7 +267,7 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
             entry_intrnl    <= #1 0;
             entry_stack     <= #1 0;
             entry_stack_ptr <= #1 0;
-            write_point     <= #1 0;
+            write_point     <= #1 64'h300;
             loaded_value    <= #1 0;
             cnt             <= #1 0;
             state           <= #1 IDLE;

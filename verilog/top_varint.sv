@@ -151,6 +151,12 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
                 next_cnt = 0;
                 next_waiting = 0;
                 next_done = ~second;
+                if (next_done)
+                begin
+                    $display("Varint serialization is done");
+                    $display("serialized string: %h", out);
+                    $display("bytes written: %d", next_bytes_written);
+                end
             end
         end
         else

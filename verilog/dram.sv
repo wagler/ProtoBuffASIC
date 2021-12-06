@@ -64,6 +64,7 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
                             begin
                                 next_valid[i] = 1'b1;
                                 data_out[i] = mem[addr_int[i]];
+                                $display("data_out[%h]=%h",i,data_out[i]);
                             end
                         end
                     end else if ((cnt == `WAIT_CYCLES-1) & ~rdwr_int[0]) begin
