@@ -370,9 +370,12 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                     begin
                         next_state = DONE;
                         next_done = 1'b1;
-                        next_entry_stack[entry_stack_ptr].valid = 1'b0;
-                        if (entry_stack_ptr != 0) // not a latch, because we set a default at the top
-                            next_entry_stack_ptr = entry_stack_ptr - 1;
+						if (entry_intrnl.field_id == 0)
+						begin
+								next_entry_stack[entry_stack_ptr].valid = 1'b0;
+								if (entry_stack_ptr != 0) // not a latch, because we set a default at the top
+									next_entry_stack_ptr = entry_stack_ptr - 1;
+						end
                     end
                 end
             DONE:

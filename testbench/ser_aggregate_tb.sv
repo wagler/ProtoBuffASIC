@@ -210,6 +210,121 @@ module ser_aggregate_tb;
 		00 00 00 00 00 00 00 00 
 		*/
 
+		$display("========                        ========");
+		 
+		$display("======== STARTING NESTED CASE 2 ========");
+
+		$display("========                        ========");
+		for (int j = 0; j < 10; j++)
+
+		begin
+			@(negedge clk);
+			reset = 1;
+			en = 0;
+			entry_valid = 0;
+		end
+
+		@(negedge clk);
+		reset = 0;
+
+        for (int i = 64'h0; i <= 64'h300; i+=1)
+            dram.mem[i] = 8'h0;
+
+		dram.mem[0] = 8'd150;
+
+        for (int i = 64'h0; i <= 64'h20; i+=1)
+            $display("mem[%h] = %h", i, dram.mem[i]);
+
+        for (int i = 64'h2f0; i <= 64'h300; i+=1)
+            $display("mem[%h] = %h", i, dram.mem[i]);
+
+		addr = 0;
+
+
+		entry = {64'h0000001340080101, 64'h0000000000000100};
+		entry_valid = 1;
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+		en = 0;
+		@(negedge clk);
+
+
+		entry = {64'h0000000940080008, 64'hxxxxxxxxxxxxxxxx};
+
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+
+		en = 0;
+		@(negedge clk);
+
+
+
+		entry = {64'h0000001340080101, 64'h0000000000000200};
+		entry_valid = 1;
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+		en = 0;
+		@(negedge clk);
+
+
+		entry = {64'h0000000940080008, 64'hxxxxxxxxxxxxxxxx};
+
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+
+		en = 0;
+		@(negedge clk);
+
+
+
+		entry = {64'h0000000000000000, 64'hxxxxxxxxxxxxxxxx};
+
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+		
+		en = 0;
+		@(negedge clk);
+
+
+
+
+		entry = {64'h0000000000000000, 64'hxxxxxxxxxxxxxxxx};
+
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+		
+		en = 0;
+		@(negedge clk);
+
+
+        for (int i = 64'h2f0; i <= 64'h300; i+=1)
+            $display("mem[%h] = %h", i, dram.mem[i]);
+
+
         $display("done");
         $finish;
     end
