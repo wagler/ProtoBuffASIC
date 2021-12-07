@@ -1,66 +1,79 @@
 `timescale 10ns/1ns
 module top_level(
-    /*** APB3 BUS INTERFACE ***/
-	/*
-    input PCLK, 				// clock
-    input PRESERN, 				// system reset
-    input PSEL, 				// peripheral select
-    input PENABLE, 				// distinguishes access phase
-    output wire PREADY, 		// peripheral ready signal
-    output wire PSLVERR,		// error signal
-    input PWRITE,				// distinguishes read and write cycles
-    input [31:0] PADDR,			// I/O address
-    input wire [31:0] PWDATA,	// data from processor to I/O device (32 bits)
-    output reg [31:0] PRDATA,	// data to processor from I/O device (32-bits)
-	*/
 
    	input clk,
 	input reset,
-	input [63:0] value,
-	input [4:0] field_type,
-	input [28:0] field_id,
-	output logic [1:0][119:0] out_port 
+    input en,
 
-    /*** I/O PORTS DECLARATION ***/	
+    input logic [15:0]       dram_valid,
+    input logic  [15:0][7:0]  data_from_dram,
+    output logic [15:0]       dram_en,
+    output logic [1:0]			dram_rdwr,
+    output logic [15:0][63:0] dram_addr,
+    output logic  [15:0][7:0]  data_to_dram,
+	output logic 				done
+
 ); 
 
-    // Probably want to change this for more informative interaction with CPU
-	/*
-    assign PSLVERR = 0;
-    assign PREADY = 1;
-	*/
+	TABLE_ENTRY fetch_out_entry;
+	logic fetch_out_valid;
 
-	logic i, next_i;
-	assign next_i = i + 1;
+	logic ob_full;
+	logic [63:0] ob_cpp_base_addr;
+	TABLE_ENTRY ob_out_entry;
+	logic ob_out_entry_valid;
 
-	wire [1:0][119:0] next_out_port;
-	wire [119:0] mux_out_port;
+	logic ser_done, ser_ready;
 
-    top_varint tv1(
-		.value(value),
-	  	.field_type(field_type),
-	 	.out_port(mux_out_port[119:40])
-	);
+	assign done = ~ob_out_entry_valid & ser_ready;
 
-	field_header fh1(
-		.field_id(field_id),
-		.field_type(field_type),
-		.out_port(mux_out_port[39:0])
-	);
+    fetch f(
+        .clk(clk),
+        .reset(reset),
+        .en(en),
+        .new_addr(64'h0),
+        .new_addr_valid(1'b0),
+        .dram_valid(dram_valid[7:0]),
+        .dram_data(data_from_dram[7:0]),
+        .dram_en(dram_en[7:0]),
+        .dram_rdwr(dram_rdwr[0]),
+        .dram_addr(dram_addr[7:0]),
+        .entry(fetch_out_entry),
+        .ob_full(ob_full),
+        .ob_valid(fetch_out_valid)
+    );
 
-	always_ff @(posedge clk)
-	begin
-		if (reset)
-		begin
-			i = 0;
-			out_port = 240'b0;
-		end
-		else
-		begin
-				i <= next_i;
-				out_port[i] <= mux_out_port;
-		end
-	end
+    object_buffer ob(
+        .clk(clk), 
+        .reset(reset),
+        .new_cpp_base_addr(64'h0),
+        .new_cpp_base_addr_valid(1'b0),
+        .new_entry(fetch_out_entry), 
+        .valid_in(fetch_out_valid), 
+        .full(ob_full),
+        .ser_ready(ser_ready),
+        .ser_done(ser_done),
+        .out_entry(ob_out_entry),
+        .out_entry_valid(ob_out_entry_valid),
+        .cpp_base_addr(ob_cpp_base_addr)
+    );
 
+    ser_aggregate sa
+    (
+        .clk(clk), 
+        .reset(reset), 
+        .en(en), 
+        .addr(ob_cpp_base_addr + ob_out_entry.offset), 
+        .entry(ob_out_entry), 
+        .entry_valid(ob_out_entry_valid), 
+        .done(ser_done), 
+        .ready(ser_ready), 
+        .dram_en(dram_en[15:8]), 
+        .dram_rdwr(dram_rdwr[1]), 
+        .dram_data_in(data_from_dram[15:8]), 
+        .dram_addr(dram_addr[15:8]), 
+        .dram_data_out(data_to_dram[15:8]), 
+        .dram_valid(dram_valid[15:8])
+    );
 
 endmodule

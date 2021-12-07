@@ -45,7 +45,7 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
             cpp_obj_ptr_stack       <= #1 0;
             out_entry_valid         <= #1 0;
             out_entry               <= #1 0;
-            cpp_base_addr           <= #1 0;
+            cpp_base_addr           <= #1 64'h100;
         end
 
         else

@@ -46,6 +46,7 @@ module fetch(clk, reset, en, new_addr, new_addr_valid, dram_en, dram_rdwr, dram_
     parameter [2:0] DRAM2_START = 3'b100; // Starts DRAM request for second 64 bits
     parameter [2:0] OB_OUT1     = 3'b101; // Asserts values to object buffer (stays here until full goes low)
     parameter [2:0] OB_OUT2     = 3'b110; // Asserts values to object buffer (stays here until full goes low)
+	parameter [2:0] DONE		= 3'b111;
 
     always_comb
     begin
@@ -108,8 +109,15 @@ module fetch(clk, reset, en, new_addr, new_addr_valid, dram_en, dram_rdwr, dram_
                         if (dram_data == 64'd0)
                         begin
                             next_ret_addr_stack_ptr = (ret_addr_stack_ptr == 0) ? 0 : (ret_addr_stack_ptr-1);
+							if (next_ret_addr_stack_ptr == 0 && ret_addr_stack_ptr == 0)
+							begin
+								next_state = DONE;
+							end
+							else
+							begin
+								next_state = OB_OUT1;
+							end
                             next_addr = next_ret_addr_stack[next_ret_addr_stack_ptr];
-                            next_state = OB_OUT1;
                             next_ob_valid = 1'b1;
                             next_entry[127:64] = dram_data; // fill in entry info except for the nested table pointer
                             next_entry[63:0] = {64{1'bX}};
@@ -182,6 +190,12 @@ module fetch(clk, reset, en, new_addr, new_addr_valid, dram_en, dram_rdwr, dram_
                     else
                         next_state = IDLE;
                 end
+
+			DONE:
+				begin
+					next_ob_valid = ob_full;
+					next_state = DONE;
+				end
 
 
             default: next_state = IDLE;
