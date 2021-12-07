@@ -57,7 +57,7 @@ module ser_aggregate_tb;
     initial
     begin
 
-        $monitor("@%g state=%b, dram_en=%b, dram_valid=%b, dram_rdwr=%b, dram_addr=%h, data_from_dram=%h, data_to_dram=%h, vs_en=%b, mc_en=%b", $time, sa.state, dram_en, dram_valid, dram_rdwr, dram_addr, dram_data_in, dram_data_out, sa.vs_en, sa.memcpy_en);
+        $monitor("@%g state=%b, dram_state=%b, dram_en=%b, dram_valid=%b, dram_rdwr=%b, dram_addr=%h, data_from_dram=%h, data_to_dram=%h, vs_en=%b, mc_en=%b, vs_done=%b, entry_valid=%b, ready=%b, entry_intrnl=%h", $time, sa.state, dram.state, dram_en, dram_valid, dram_rdwr, dram_addr, dram_data_in, dram_data_out, sa.vs_en, sa.memcpy_en, sa.vs_done, entry_valid, ready,sa.entry_intrnl);
 
         reset = 1;
         en = 0;
@@ -74,21 +74,76 @@ module ser_aggregate_tb;
         dram.mem[6] = 8'hff;
         dram.mem[7] = 8'hff;
         for (int i = 64'h4; i <= 64'hF; i+=1)
-            $display("mem[%h] = %h", i, dram.mem[i]);
+            //$display("mem[%h] = %h", i, dram.mem[i]);
         addr = 4;
         entry = {dram.mem['h17],dram.mem['h16],dram.mem['h15],dram.mem['h14],dram.mem['h13],dram.mem['h12],dram.mem['h11],dram.mem['h10], 64'hx};
-        $display("entry=%h",entry);
-        $display("field id=%d",entry.field_id);
-        $display("nested=%b",entry.nested);
-        $display("field type=%b",entry.field_type);
 
         entry_valid = 1;
+        en = 1;
+        @(negedge clk);
+        while (~done) @(negedge clk);
+        entry_valid = 0;
+        en = 0;
+        @(negedge clk);
+        @(negedge clk);
+
+        for (int i = 64'h300; i >= 64'h2E0; i-=1)
+            //$display("mem[%h] = %h", i, dram.mem[i]);
+
+
+        // String test case
+        // C++ char buffer that string points to
+        for (int i = 23; i < 31; i+=1)
+        begin
+            dram.mem[i] = 8'd0;
+        end
+        dram.mem[31] = 8'hde;
+        dram.mem[32] = 8'had;
+        dram.mem[33] = 8'hbe;
+        dram.mem[34] = 8'hef;
+
+        // c++ string object starts at 0
+        // but the pointer is 8 bytes inside
+        dram.mem[8] = 8'b00010111;
+        dram.mem[9] = 8'd0;
+        dram.mem[10] = 8'd0;
+        dram.mem[11] = 8'd0;
+        dram.mem[12] = 8'd0;
+        dram.mem[13] = 8'd0;
+        dram.mem[14] = 8'd0;
+        dram.mem[15] = 8'd0;
+
+        $display("mem after setting 8");
+        for (int i = 64'h0; i <= 64'hf; i+=1)
+            $display("mem[%h] = %h", i, dram.mem[i]);
+        addr = 8;
+
+        dram.mem[36] = 8'h08;
+        dram.mem[37] = 8'h00;
+        dram.mem[38] = 8'h00;
+        dram.mem[39] = 8'h40;
+        dram.mem[40] = 8'h12;
+        dram.mem[41] = 8'h00;
+        dram.mem[42] = 8'h00;
+        dram.mem[43] = 8'h00;
+
+        entry_valid = 0;
+
+        entry_valid = 1;
+        entry = {dram.mem['d43],dram.mem['d42],dram.mem['d41],dram.mem['d40],dram.mem['d39],dram.mem['d38],dram.mem['d37],dram.mem['d36], 64'hx};
+
+        for (int i = 64'd0; i <= 64'd43; i+=1)
+            $display("mem[%h] = %h", i, dram.mem[i]);
+
+        $display("Next write location: %h", sa.write_point);
+        @(negedge clk);
         en = 1;
         @(negedge clk);
         while (~done) @(negedge clk);
 
         for (int i = 64'h300; i >= 64'h2E0; i-=1)
             $display("mem[%h] = %h", i, dram.mem[i]);
+
         $display("done");
         $finish;
     end

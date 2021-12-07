@@ -14,3 +14,8 @@ typedef struct packed {
     TABLE_ENTRY     entry;
 } BUFFER_ENTRY;
 
+typedef struct packed {
+    logic valid;
+    logic [28:0] field_id;
+    logic [63:0] saved_write_point;
+} STACK_ENTRY; 

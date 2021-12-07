@@ -35,7 +35,7 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
 
 	assign zz_en = (field_type == 5'd17 || field_type == 5'd18) ? 1'b1 : 1'b0;
 	//assign is_32_input = field_type == 5'd17;
-    assign is_32_input = (field_type == 5'd2) | (field_type == 5'd5) | (field_type == 5'd7) | (field_type == 5'd13) | (field_type == 5'd15) | (field_type == 5'd17);
+    assign is_32_input = (field_type == 5'd2) | (field_type == 5'd5) | (field_type == 5'd7) | (field_type == 5'd13) | (field_type == 5'd15) | (field_type == 5'd17) | (field_type == 5'd0);
 
 	zigzag z1(
 			.en(zz_en),
@@ -72,6 +72,9 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
             next_vsout = out;
             if (~waiting & second)
             begin
+                $display("VS state 2!!!!!!!!!!");
+                $display(next_vsout);
+                $display(|next_vsout[7:0]);
                 next_second = 0;
 
                 next_dram_en[0] = |next_vsout[63:56];
@@ -120,6 +123,7 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
             end
             else if(~waiting & ~second)
             begin
+                $display("VS state 1!!!!!!!!!!");
                 next_second = 1;
                 next_waiting = 0;
 
@@ -141,13 +145,15 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
                 next_waiting = |next_dram_en;
 
             end
-            else if (waiting & (cnt != 20))
+            else if (waiting & (cnt != 21))
             begin
+                $display("VS state 3!!!!!!!!!!");
                 next_dram_en = 0;
                 next_cnt = cnt + 1;
             end
             else // waiting for dram and cnt==20
             begin
+                $display("VS state 4!!!!!!!!!!");
                 next_cnt = 0;
                 next_waiting = 0;
                 next_done = ~second;
@@ -164,6 +170,7 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
             next_cnt = 0;
             next_dram_en = 0;
             next_second = 0;
+            next_waiting = 0;
             next_bytes_written = 0;
         end
     end
