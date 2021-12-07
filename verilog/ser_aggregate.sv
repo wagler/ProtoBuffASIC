@@ -184,8 +184,13 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                         else
                             next_write_point -= entry_intrnl.size;
 
-                        next_dram_en = 8'h1f;
                         next_dram_rdwr = 1'b0;
+                        
+                        next_dram_en[0] = |field_header[7:0];
+                        next_dram_en[1] = |field_header[15:8];
+                        next_dram_en[2] = |field_header[23:16];
+                        next_dram_en[3] = |field_header[31:24];
+                        next_dram_en[4] = |field_header[39:32];
                         
                         next_dram_data_out[0] = field_header[7:0];
                         next_dram_data_out[1] = field_header[15:8];
@@ -194,11 +199,15 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                         next_dram_data_out[4] = field_header[39:32];
                         
                         next_dram_addr[4] = next_write_point;
-                        next_dram_addr[3] = next_write_point - 1;
-                        next_dram_addr[2] = next_write_point - 2;
-                        next_dram_addr[1] = next_write_point - 3;
-                        next_dram_addr[0] = next_write_point - 4;
-                        next_write_point -= 5;
+                        next_write_point -= next_dram_en[4];
+                        next_dram_addr[3] = next_write_point;
+                        next_write_point -= next_dram_en[3];
+                        next_dram_addr[2] = next_write_point;
+                        next_write_point -= next_dram_en[2];
+                        next_dram_addr[1] = next_write_point;
+                        next_write_point -= next_dram_en[1];
+                        next_dram_addr[0] = next_write_point;
+                        next_write_point -= next_dram_en[0];
 
                     end
                     else
