@@ -161,6 +161,13 @@ module object_buffer_tb;
             print_ob_stack();
         end
 
+        @(negedge clk);
+        ser_ready = 1;
+        ser_done = 1;
+        @(negedge clk);
+        ser_done = 0;
+        @(negedge clk);
+        print_ob();
         $write("\n");
         $finish;
     end
