@@ -39,7 +39,7 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
 
     TABLE_ENTRY entry_intrnl;
     STACK_ENTRY [`STACK_ROWS-1:0] entry_stack, next_entry_stack;
-    STACK_ENTRY [$clog2(`STACK_ROWS)-1:0] entry_stack_ptr, next_entry_stack_ptr;
+    logic [$clog2(`STACK_ROWS)-1:0] entry_stack_ptr, next_entry_stack_ptr;// Changed from STACK_ENTRY to logic
 
     // The address of the next byte to write to in the output buffer
     logic [63:0] write_point, next_write_point;
@@ -134,10 +134,10 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                 begin
                     next_ready = 1;
                     next_done = 0;
-                    $display("entry: %h", entry_intrnl);
+                    $display("entry: %h", entry);
                     $display("field_id: %d", entry.field_id);
                     // If the current entry isn't a nested object header or footer
-                    if (en & entry_valid & (entry_intrnl.field_id != 0) & ~entry_intrnl.nested)
+                    if (en & entry_valid & (entry.field_id != 0) & ~entry.nested)
                     begin
                         next_state = LOAD_VALUE;
                         next_ready = 0;
@@ -146,19 +146,21 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                         for(int i = 0; i < 8; i+=1)
                             next_dram_addr[i] = addr + i;
                     end
-                    else if (en & entry_valid & (entry_intrnl.field_id != 0) & entry_intrnl.nested)
+                    else if (en & entry_valid & (entry.field_id != 0) & entry.nested)
                     begin
+						next_ready = 0;
                         next_state = PUSH;
                         next_entry_stack_ptr += entry_stack[entry_stack_ptr].valid;
                         next_entry_stack[next_entry_stack_ptr].valid = 1'b1;
-                        next_entry_stack[next_entry_stack_ptr].field_id = entry_intrnl.field_id;
+                        next_entry_stack[next_entry_stack_ptr].field_id = entry.field_id;
                         next_entry_stack[next_entry_stack_ptr].saved_write_point = write_point;
                     end
                     else if (en & entry_valid & (entry.field_id == 0))
                     begin
+						next_ready = 0;
                         next_state = SIZE;
                         next_vs_en = 1'b1;
-                        next_loaded_value = (write_point - entry_stack[entry_stack_ptr].saved_write_point);
+                        next_loaded_value = (entry_stack[entry_stack_ptr].saved_write_point - write_point);
                     end
                 end
 
@@ -421,7 +423,7 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
             vs_en           <= #1 next_vs_en;
             memcpy_en       <= #1 next_memcpy_en;
             memcpy_src      <= #1 next_memcpy_src;
-            if (next_ready & entry_valid)
+            if (entry_valid)
                 entry_intrnl <= #1 entry;
         end
     end

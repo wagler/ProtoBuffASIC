@@ -57,10 +57,11 @@ module ser_aggregate_tb;
     initial
     begin
 
-        $monitor("@%g state=%b, dram_state=%b, dram_en=%b, dram_valid=%b, dram_rdwr=%b, dram_addr=%h, data_from_dram=%h, data_to_dram=%h, vs_en=%b, mc_en=%b, vs_done=%b, entry_valid=%b, ready=%b, entry_intrnl=%h", $time, sa.state, dram.state, dram_en, dram_valid, dram_rdwr, dram_addr, dram_data_in, dram_data_out, sa.vs_en, sa.memcpy_en, sa.vs_done, entry_valid, ready,sa.entry_intrnl);
+        $monitor("@%g en =%b, state=%b, dram_state=%b, dram_en=%b, dram_valid=%b, dram_rdwr=%b, dram_addr=%h, data_from_dram=%h, data_to_dram=%h, vs_en=%b, mc_en=%b, vs_done=%b, entry_valid=%b, ready=%b, entry_intrnl=%h", $time, en, sa.state, dram.state, dram_en, dram_valid, dram_rdwr, dram_addr, dram_data_in, dram_data_out, sa.vs_en, sa.memcpy_en, sa.vs_done, entry_valid, ready,sa.entry_intrnl);
 
         reset = 1;
         en = 0;
+		entry_valid = 0;
         @(negedge clk);
         reset = 0;
         @(negedge clk);
@@ -143,6 +144,71 @@ module ser_aggregate_tb;
 
         for (int i = 64'h300; i >= 64'h2E0; i-=1)
             $display("mem[%h] = %h", i, dram.mem[i]);
+
+		// Nested test
+		//
+
+		$display("======== STARTING NESTED CASE ========");
+
+        for (int i = 64'h10; i >= 64'h1; i-=1)
+            $display("mem[%h] = %h", i, dram.mem[i]);
+	    $display("mem[%h] = %h", 0, dram.mem[0]);
+
+		for (int j = 0; j < 10; j++)
+		begin
+			@(negedge clk);
+			reset = 1;
+			en = 0;
+			entry_valid = 0;
+		end
+
+		@(negedge clk);
+
+		reset = 0;
+
+		entry = {64'h0000001340080101, 64'h0000000000000100};
+		entry_valid = 1;
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+		en = 0;
+		@(negedge clk);
+
+
+		entry = {64'h0000000940080008, 64'hxxxxxxxxxxxxxxxx};
+
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+
+		en = 0;
+		@(negedge clk);
+
+		entry = {64'h0000000000000000, 64'hxxxxxxxxxxxxxxxx};
+
+		en = 1;
+
+        while (~done) @(negedge clk);
+		$display("entry_stack_ptr: %h", sa.entry_stack_ptr);
+		$display("Entry_stack[entry_stack_ptr].valid: %h", sa.entry_stack[sa.entry_stack_ptr].valid);
+		$display("Entry_stack[entry_stack_ptr]: %h", sa.entry_stack[sa.entry_stack_ptr]);
+		
+		en = 0;
+		@(negedge clk);
+
+        for (int i = 64'h300; i >= 64'h2E0; i-=1)
+            $display("mem[%h] = %h", i, dram.mem[i]);
+	/*	
+		08 00 08 40 09 00 00 00 
+		00 00 00 00 00 00 00 00 
+		00 00 00 00 00 00 00 00 
+		*/
 
         $display("done");
         $finish;
