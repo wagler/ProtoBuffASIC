@@ -53,6 +53,9 @@ sim:	simv $(ASSEMBLED)
 simv:	$(HEADERS) $(SIMFILES) $(TESTBENCH)
 	$(VCS) $^ -o simv
 
+syn:	$(SIMFILES) $(TESTBENCH)
+	$(VCS) $^ $(LIB) +define+SYNTH_TEST -o syn_simv 
+
 .PHONY: sim
 
 # Debugging
