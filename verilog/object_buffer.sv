@@ -90,7 +90,7 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
         // CAM for invalid rows backwards, so we find the lowest number row last
         for(int i = 0; i <= `ROWS-1; i+=1)
         begin
-           if ((i > curr) & entries[i].valid==1'b0 & (found == 0))
+           if ((i >= curr) & entries[i].valid==1'b0 & (found == 0))
            begin
                next_full = 1'b0; 
                free = i;

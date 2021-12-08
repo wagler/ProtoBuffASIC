@@ -220,7 +220,7 @@ module top_level_tb;
 
     for (int i = 0; i<200; i+=1)
     begin
-        if (i > 100 && i < 120)
+        if (i > 0 && i < 120)
         begin
             print_ob();
             print_ob_stack();
