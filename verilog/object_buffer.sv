@@ -118,7 +118,7 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
         //next_out_entry_valid = next_entries[next_curr].valid & ser_ready;
         next_out_entry_valid = next_entries[next_curr].valid && ~(next_entries[next_curr].entry.field_id == 0 && cpp_obj_ptr_stack_ptr == 0);
 
-        next_done = next_entries[next_curr].valid && (next_entries[next_curr].entry.field_id == 0 && cpp_obj_ptr_stack_ptr == 0);
+        next_done = next_entries[next_curr].valid && (next_entries[next_curr].entry.field_id == 0 && cpp_obj_ptr_stack_ptr == 0 && ser_done);
         
         // Serialization is going to happen on a nested object, so add it to the stack
         if ((next_curr != curr) & next_entries[next_curr].valid & next_entries[next_curr].entry.nested)
