@@ -72,9 +72,6 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
             next_vsout = out;
             if (~waiting & second)
             begin
-                $display("VS state 2!!!!!!!!!!");
-                $display(next_vsout);
-                $display(|next_vsout[7:0]);
                 next_second = 0;
 
                 next_dram_en[0] = |next_vsout[63:56];
@@ -123,7 +120,6 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
             end
             else if(~waiting & ~second)
             begin
-                $display("VS state 1!!!!!!!!!!");
                 next_second = 1;
                 next_waiting = 0;
 
@@ -147,13 +143,11 @@ module top_varint(clk, reset, en, dst_addr, value, field_type, dram_en, dram_add
             end
             else if (waiting & (cnt != 21))
             begin
-                $display("VS state 3!!!!!!!!!!");
                 next_dram_en = 0;
                 next_cnt = cnt + 1;
             end
             else // waiting for dram and cnt==20
             begin
-                $display("VS state 4!!!!!!!!!!");
                 next_cnt = 0;
                 next_waiting = 0;
                 next_done = ~second;

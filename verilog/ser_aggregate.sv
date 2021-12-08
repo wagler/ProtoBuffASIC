@@ -134,9 +134,7 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                 begin
                     next_ready = 1;
                     next_done = 0;
-                    $display("entry: %h", entry);
-                    $display("field_id: %d", entry.field_id);
-                    // If the current entry isn't a nested object header or footer
+                     // If the current entry isn't a nested object header or footer
                     if (en & entry_valid & (entry.field_id != 0) & ~entry.nested)
                     begin
                         next_state = LOAD_VALUE;
@@ -254,7 +252,6 @@ module ser_aggregate(clk, reset, en, addr, entry, entry_valid, done, ready, dram
                         next_memcpy_en = 0;
                         next_vs_en = 0;
                         next_dram_en = 0;
-                        $display("FIELD TYPE!!!!!: %d", entry_intrnl.field_type);
                         case(entry_intrnl.field_type)
                             // Varints
                             5'd1, 5'd2, 5'd3, 5'd4, 5'd5, 5'd8, 5'd13, 5'd14, 5'd15, 5'd16, 5'd17, 5'd18:

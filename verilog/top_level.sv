@@ -25,8 +25,6 @@ module top_level(
 
 	logic ser_done, ser_ready;
 
-	assign done = ~ob_out_entry_valid & ser_ready;
-
     fetch f(
         .clk(clk),
         .reset(reset),
@@ -55,7 +53,8 @@ module top_level(
         .ser_done(ser_done),
         .out_entry(ob_out_entry),
         .out_entry_valid(ob_out_entry_valid),
-        .cpp_base_addr(ob_cpp_base_addr)
+        .cpp_base_addr(ob_cpp_base_addr),
+		.done(done)
     );
 
     ser_aggregate sa

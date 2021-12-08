@@ -1,7 +1,7 @@
 `define ROWS 64
 `define STACK_ROWS 16
 
-module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new_entry, valid_in, full, ser_ready, ser_done, out_entry, out_entry_valid, cpp_base_addr);
+module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new_entry, valid_in, full, ser_ready, ser_done, out_entry, out_entry_valid, cpp_base_addr, done);
 
     input wire clk;
     input wire reset;
@@ -15,11 +15,13 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
     output TABLE_ENTRY out_entry;
     output logic out_entry_valid;
     output logic [63:0] cpp_base_addr;
+	output logic done;
 
     logic next_full;
     logic next_out_entry_valid;
     TABLE_ENTRY next_out_entry;
     logic [63:0] next_cpp_base_addr;
+	logic next_done;
 
 
     logic [$clog2(`ROWS)-1:0] curr, next_curr;
@@ -42,10 +44,15 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
             end
 
             cpp_obj_ptr_stack_ptr   <= #1 0;
-            cpp_obj_ptr_stack       <= #1 0;
+           	cpp_obj_ptr_stack[0]       <= #1 64'h100;
+			for (int i = 1; i < `STACK_ROWS; i = i + 1)
+			begin
+            	cpp_obj_ptr_stack[i]       <= #1 0;
+			end
             out_entry_valid         <= #1 0;
             out_entry               <= #1 0;
             cpp_base_addr           <= #1 64'h100;
+			done					<= #1 0;
         end
 
         else
@@ -58,6 +65,7 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
             out_entry_valid         <= #1 next_out_entry_valid;
             out_entry               <= #1 next_out_entry;
             cpp_base_addr           <= #1 next_cpp_base_addr;
+			done					<= #1 next_done;
         end
     end
 
@@ -68,6 +76,7 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
         next_cpp_obj_ptr_stack = cpp_obj_ptr_stack;
         next_cpp_obj_ptr_stack_ptr = cpp_obj_ptr_stack_ptr;
         next_out_entry_valid = out_entry_valid;
+		next_done = done;
 
         // Check for vacant entries
         next_full = 1'b1;
@@ -104,7 +113,9 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
 
         // Only give the output entry to the serializers once the serializers are ready
         //next_out_entry_valid = next_entries[next_curr].valid & ser_ready;
-        next_out_entry_valid = next_entries[next_curr].valid;
+        next_out_entry_valid = next_entries[next_curr].valid && ~(next_entries[next_curr].entry.field_id == 0 && cpp_obj_ptr_stack_ptr == 0);
+
+        next_done = next_entries[next_curr].valid && (next_entries[next_curr].entry.field_id == 0 && cpp_obj_ptr_stack_ptr == 0);
         
         // Serialization is going to happen on a nested object, so add it to the stack
         if ((next_curr != curr) & next_entries[next_curr].valid & next_entries[next_curr].entry.nested)

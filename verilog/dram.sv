@@ -64,7 +64,6 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
                             begin
                                 next_valid[i] = 1'b1;
                                 data_out[i] = mem[addr_int[i]];
-                                $display("data_out[%h]=%h",i,data_out[i]);
                             end
                         end
                     end else if ((cnt == `WAIT_CYCLES-1) & ~rdwr_int[0]) begin
@@ -139,6 +138,7 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
                 begin
                     next_state2 = IDLE;
                     next_valid[15:8] = 0;
+					
                 end
 
             default: next_state2 = IDLE;
@@ -169,10 +169,18 @@ module DRAM(clk, reset, en, rdwr, data_in , addr, data_out, valid);
             // someone puts onto the input lines
             if (state != WAIT)
             begin
-                en_int      <= #1 en;
-                rdwr_int    <= #1 rdwr;
-                data_in_int <= #1 data_in;
-                addr_int    <= #1 addr;
+                en_int[7:0]      <= #1 en[7:0];
+                rdwr_int[0]    <= #1 rdwr[0];
+                data_in_int[7:0] <= #1 data_in[7:0];
+                addr_int[7:0]    <= #1 addr[7:0];
+            end
+
+            if (state2 != WAIT)
+            begin
+                en_int[15:8]      <= #1 en[15:8];
+                rdwr_int[1]    <= #1 rdwr[1];
+                data_in_int[15:8] <= #1 data_in[15:8];
+                addr_int[15:8]    <= #1 addr[15:8];
             end
         end
     end
