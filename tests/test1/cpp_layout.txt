@@ -1,0 +1,8 @@
+&t1 = 0x0000005c26eff778
+t1.id_ = 42
+t1.name_ = "Rohan"
+&(t1.id_) = 0x0000005c26eff798 (32B offset) (4B object)
+&(t1.name_) = 0x0000005c26eff790 (24B offset) (8B object)
+t1.name_.tagged_ptr_.ptr_ = 0x0000016d46f91400
+@0x0000016d46f91400 : 00 c3 f7 46 6d 01 00 00 52 6f 68 61 6e 00 00 00
+@&t1 = 40 5e 39 aa f6 7f 00 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 00 14 f9 46 6d 01 00 00 2a 00 00 00 cc cc cc cc
