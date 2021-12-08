@@ -47,6 +47,51 @@ module top_level_tb;
         #1 clk = !clk;
 
 
+    task print_ob;
+        $display("\t  +-------------------------------------------------------------------------------------+");
+        $display("\t  |                                 Object Buffer        @%g                            |",$time);
+        $display("\t  +-------------------------------------------------------------------------------------+");
+        $display("\t  |    entry    | valid | Field ID  | Type | Offset | Size  | Nested | Nested Table Addr|");
+        $display("\t  +-------------------------------------------------------------------------------------+");
+        for (int i = 0; i < 9; i=i+1)
+        begin
+
+            //if (ob.entries[i].valid)
+            //begin
+                if (tl1.ob.curr == i)
+                begin
+                    $display("\t->| %d |   %b   | %d |  %d  | %d  | %d |   %b    | %h |", 
+                        i, tl1.ob.entries[i].valid, tl1.ob.entries[i].entry.field_id, tl1.ob.entries[i].entry.field_type, 
+                        tl1.ob.entries[i].entry.offset, tl1.ob.entries[i].entry.size, tl1.ob.entries[i].entry.nested, tl1.ob.entries[i].entry.nested_type_table
+                    );            
+                end
+                else
+                begin
+                    $display("\t  | %d |   %b   | %d |  %d  | %d  | %d |   %b    | %h |", 
+                        i, tl1.ob.entries[i].valid, tl1.ob.entries[i].entry.field_id, tl1.ob.entries[i].entry.field_type, 
+                        tl1.ob.entries[i].entry.offset, tl1.ob.entries[i].entry.size, tl1.ob.entries[i].entry.nested, tl1.ob.entries[i].entry.nested_type_table
+                    );
+                end
+                $display("\t  +-------------------------------------------------------------------------------------+");
+            //end
+        end
+    endtask
+
+    task print_ob_stack;
+        $display("\t  +--------------------------------------------------+");
+        $display("\t  |                 OB Stack @%g                    |",$time);
+        $display("\t  +--------------------------------------------------+");
+        $display("\t  |     Stack Item        |     C++ Object Ptr       |");
+        $display("\t  +--------------------------------------------------+");
+        for (int i = 0; i < 16; i=i+1)
+        begin
+            if (tl1.ob.cpp_obj_ptr_stack_ptr == i)
+                $display("\t->|%d            |        %h  |",i, tl1.ob.cpp_obj_ptr_stack[i]);
+            else
+                $display("\t  |%d            |        %h  |",i, tl1.ob.cpp_obj_ptr_stack[i]);
+        $display("\t  +--------------------------------------------------+");
+        end
+    endtask
 	initial
 	begin
 
@@ -80,7 +125,7 @@ module top_level_tb;
 	for (int i = 64'h300; i >= 64'h2f0; i = i - 1)
 		$display("mem[%h] = %h", i, dram.mem[i]);
 
-*/
+
 	reset = 1;
     en = 0;
 	@(negedge clk);
@@ -125,7 +170,72 @@ module top_level_tb;
 
 	for (int i = 64'h300; i >= 64'h2f0; i = i - 1)
 		$display("mem[%h] = %h", i, dram.mem[i]);
+*/
 
+	reset = 1;
+    en = 0;
+	@(negedge clk);
+	reset = 0;
+	@(negedge clk);
+	@(negedge clk);
+
+	$readmemh("tests/test2/cpp_obj.mem", dram.mem, 64'h100);
+	$readmemh("tests/test2/table1.mem", dram.mem);
+	$readmemh("tests/test2/table2.mem", dram.mem,64'h80);
+
+    dram.mem[64'h200] = 8'hdd;
+    dram.mem[64'h201] = 8'hdd;
+    dram.mem[64'h202] = 8'hdd;
+    dram.mem[64'h203] = 8'hdd;
+    dram.mem[64'h204] = 8'hdd;
+    dram.mem[64'h205] = 8'hdd;
+    dram.mem[64'h206] = 8'hdd;
+    dram.mem[64'h207] = 8'hdd;
+    dram.mem[64'h208] = 8'h52;
+    dram.mem[64'h209] = 8'h6f;
+    dram.mem[64'h20A] = 8'h68;
+    dram.mem[64'h20B] = 8'h61;
+    dram.mem[64'h20C] = 8'h6e;
+
+
+	for (int i = 64'h0; i <= 64'h30; i = i + 1)
+		$display("mem[%h] = %h", i, dram.mem[i]);
+    $display("=======================");
+	for (int i = 64'h80; i <= 64'h100; i = i + 1)
+		$display("mem[%h] = %h", i, dram.mem[i]);
+    $display("=======================");
+	for (int i = 64'h100; i <= 64'h130; i = i + 1)
+		$display("mem[%h] = %h", i, dram.mem[i]);
+    $display("=======================");
+	for (int i = 64'h200; i <= 64'h20C; i = i + 1)
+		$display("mem[%h] = %h", i, dram.mem[i]);
+    $display("=======================");
+
+	@(negedge clk);
+    en = 1;
+	@(negedge clk);
+	@(negedge clk);
+	@(negedge clk);
+	@(negedge clk);
+
+    for (int i = 0; i<200; i+=1)
+    begin
+        if (i > 100 && i < 120)
+        begin
+            print_ob();
+            print_ob_stack();
+        end
+        @(negedge clk);
+    end
+	while (~done) 
+    begin
+        @(negedge clk);
+    end
+	@(negedge clk);
+    print_ob();
+    print_ob_stack();
+	for (int i = 64'h300; i >= 64'h2e0; i = i - 1)
+		$display("mem[%h] = %h", i, dram.mem[i]);
 	$finish;
 	end
 

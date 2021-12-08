@@ -69,6 +69,7 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
         end
     end
 
+    logic found;
     always_comb
     begin
         next_curr = ser_done ? curr+1 : curr;
@@ -77,6 +78,7 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
         next_cpp_obj_ptr_stack_ptr = cpp_obj_ptr_stack_ptr;
         next_out_entry_valid = out_entry_valid;
 		next_done = done;
+        found = 0;
 
         // Check for vacant entries
         next_full = 1'b1;
@@ -86,12 +88,13 @@ module object_buffer(clk, reset, new_cpp_base_addr, new_cpp_base_addr_valid, new
         free = 'd0;
 
         // CAM for invalid rows backwards, so we find the lowest number row last
-        for(int i = `ROWS-1; i >= 0; i=i-1)
+        for(int i = curr; i <= `ROWS-1; i+=1)
         begin
-           if (entries[i].valid==1'b0)
+           if (entries[i].valid==1'b0 & (found == 0))
            begin
                next_full = 1'b0; 
                free = i;
+               found = 1;
            end
         end
 
