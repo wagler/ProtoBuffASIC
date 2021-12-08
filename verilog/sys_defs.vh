@@ -1,4 +1,4 @@
-`timescale 10ns/1ns
+`timescale 1ns/1ps
 
 typedef struct packed {
     logic [28:0]    field_id;           // 29 bits

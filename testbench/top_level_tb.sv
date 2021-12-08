@@ -1,4 +1,4 @@
-`timescale 10ns/1ns
+//`timescale 10ns/1ns
 module top_level_tb;
 
    	logic clk;
@@ -44,7 +44,7 @@ module top_level_tb;
     end
 
     always
-        #1 clk = !clk;
+        #4 clk = !clk;
 
 
     task print_ob;
@@ -218,6 +218,7 @@ module top_level_tb;
 	@(negedge clk);
 	@(negedge clk);
 
+        /*
     for (int i = 0; i<200; i+=1)
     begin
         if (i > 0 && i < 120)
@@ -227,6 +228,7 @@ module top_level_tb;
         end
         @(negedge clk);
     end
+        */
 	while (~done) 
     begin
         @(negedge clk);
@@ -236,6 +238,8 @@ module top_level_tb;
     print_ob_stack();
 	for (int i = 64'h300; i >= 64'h2e0; i = i - 1)
 		$display("mem[%h] = %h", i, dram.mem[i]);
+
+    $display($time);
 	$finish;
 	end
 
