@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package tutorial;
+
+message Nested {
+  required sint64 balance = 4;
+  required int32 id = 5;
+}
+
+message Test2 {
+  required int32 id = 1;
+  required string name = 2;
+  message Nested {
+    required sint64 balance = 4;
+  }
+  required Nested account = 3;
+}
